@@ -1,0 +1,390 @@
+@startuml
+!theme plain
+title Diagrama de Clases - Sistema de Bienestar Animal
+
+skinparam classAttributeIconSize 0
+
+' Entidades principales
+class Animal {
+  - id: UUID
+  - codigo_unico: String
+  - nombre: String
+  - especie: String
+  - raza: String
+  - sexo: String
+  - edad_aproximada: Integer
+  - color: String
+  - tamanio: String
+  - senias_particulares: Text
+  - foto_principal: String
+  - galeria_fotos: JSON
+  - fecha_rescate: Date
+  - ubicacion_rescate: String
+  - estado: String
+  - estado_salud: String
+  - observaciones: Text
+  - created_at: DateTime
+  - updated_at: DateTime
+  __
+  + registrar(): Boolean
+  + actualizar(): Boolean
+  + cambiarEstado(nuevoEstado: String): Boolean
+  + obtenerHistorialCompleto(): HistorialClinico
+  + validarDisponibilidadAdopcion(): Boolean
+  + generarFicha(): PDF
+}
+
+class HistorialClinico {
+  - id: UUID
+  - animal_id: UUID
+  - fecha_apertura: DateTime
+  - estado: String
+  - created_at: DateTime
+  __
+  + crear(): Boolean
+  + obtenerConsultas(): Array<Consulta>
+  + obtenerVacunas(): Array<Vacuna>
+  + obtenerTratamientos(): Array<Tratamiento>
+  + generarResumen(): PDF
+}
+
+class Consulta {
+  - id: UUID
+  - historial_clinico_id: UUID
+  - veterinario_id: UUID
+  - fecha_consulta: DateTime
+  - motivo: Text
+  - sintomas: Text
+  - signos_vitales: JSON
+  - diagnostico: Text
+  - observaciones: Text
+  - recomendaciones: Text
+  - proxima_cita: Date
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + actualizar(): Boolean
+  + asociarTratamiento(tratamiento: Tratamiento): Boolean
+}
+
+class Vacuna {
+  - id: UUID
+  - historial_clinico_id: UUID
+  - tipo_vacuna: String
+  - nombre_vacuna: String
+  - fecha_aplicacion: Date
+  - fecha_proxima_dosis: Date
+  - lote_vacuna: String
+  - veterinario_id: UUID
+  - observaciones: Text
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + programarRecordatorio(): Boolean
+  + validarVencimiento(): Boolean
+}
+
+class Tratamiento {
+  - id: UUID
+  - consulta_id: UUID
+  - historial_clinico_id: UUID
+  - tipo_tratamiento: String
+  - descripcion: Text
+  - fecha_inicio: Date
+  - fecha_fin: Date
+  - estado: String
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + asociarMedicamentos(medicamentos: Array<Medicamento>): Boolean
+  + finalizarTratamiento(): Boolean
+}
+
+class Medicamento {
+  - id: UUID
+  - tratamiento_id: UUID
+  - nombre: String
+  - dosis: String
+  - frecuencia: String
+  - duracion_dias: Integer
+  - via_administracion: String
+  - observaciones: Text
+  __
+  + registrar(): Boolean
+  + verificarStock(): Boolean
+}
+
+class Adopcion {
+  - id: UUID
+  - animal_id: UUID
+  - adoptante_id: UUID
+  - fecha_solicitud: DateTime
+  - fecha_aprobacion: DateTime
+  - fecha_entrega: DateTime
+  - estado: String
+  - evaluador_id: UUID
+  - observaciones: Text
+  - contrato_firmado: Boolean
+  - contrato_url: String
+  - created_at: DateTime
+  - updated_at: DateTime
+  __
+  + registrar(): Boolean
+  + evaluar(): Boolean
+  + aprobar(): Boolean
+  + rechazar(motivo: String): Boolean
+  + completarEntrega(): Boolean
+  + revocar(motivo: String): Boolean
+}
+
+class Adoptante {
+  - id: UUID
+  - nombres: String
+  - apellidos: String
+  - tipo_documento: String
+  - numero_documento: String
+  - fecha_nacimiento: Date
+  - telefono: String
+  - email: String
+  - direccion: String
+  - tipo_vivienda: String
+  - tiene_patio: Boolean
+  - experiencia_animales: Text
+  - num_personas_hogar: Integer
+  - estado: String
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + actualizar(): Boolean
+  + obtenerAdopciones(): Array<Adopcion>
+}
+
+class VisitaDomiciliaria {
+  - id: UUID
+  - adopcion_id: UUID
+  - fecha_programada: Date
+  - fecha_realizada: DateTime
+  - visitador_id: UUID
+  - tipo_visita: String
+  - observaciones: Text
+  - condiciones_hogar: JSON
+  - estado_animal: JSON
+  - resultado: String
+  - recomendaciones: Text
+  - fotos_respaldo: JSON
+  - created_at: DateTime
+  __
+  + programar(): Boolean
+  + registrar(): Boolean
+  + evaluarCondiciones(): String
+  + generarReporte(): PDF
+}
+
+class Denuncia {
+  - id: UUID
+  - numero_ticket: String
+  - denunciante_id: UUID
+  - fecha_denuncia: DateTime
+  - canal_recepcion: String
+  - tipo_denuncia: String
+  - descripcion: Text
+  - ubicacion: String
+  - latitud: Decimal
+  - longitud: Decimal
+  - evidencias: JSON
+  - prioridad: String
+  - estado: String
+  - responsable_id: UUID
+  - fecha_resolucion: DateTime
+  - observaciones_resolucion: Text
+  - es_anonima: Boolean
+  - created_at: DateTime
+  - updated_at: DateTime
+  __
+  + registrar(): Boolean
+  + asignarResponsable(usuario: Usuario): Boolean
+  + evaluarPrioridad(): String
+  + actualizarEstado(nuevoEstado: String): Boolean
+  + resolver(): Boolean
+}
+
+class Denunciante {
+  - id: UUID
+  - nombres: String
+  - apellidos: String
+  - telefono: String
+  - email: String
+  - direccion: String
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + obtenerDenuncias(): Array<Denuncia>
+}
+
+class Rescate {
+  - id: UUID
+  - denuncia_id: UUID
+  - fecha_programada: Date
+  - fecha_ejecucion: DateTime
+  - equipo_rescate: JSON
+  - animal_rescatado_id: UUID
+  - exitoso: Boolean
+  - observaciones: Text
+  - motivo_fallo: Text
+  - created_at: DateTime
+  __
+  + programar(): Boolean
+  + ejecutar(): Boolean
+  + registrarAnimal(animal: Animal): Boolean
+}
+
+class Usuario {
+  - id: UUID
+  - username: String
+  - email: String
+  - password_hash: String
+  - nombres: String
+  - apellidos: String
+  - origen_autenticacion: String
+  - mfa_enabled: Boolean
+  - mfa_secret: String
+  - activo: Boolean
+  - ultimo_acceso: DateTime
+  - created_at: DateTime
+  __
+  + autenticar(password: String): Boolean
+  + validarMFA(codigo: String): Boolean
+  + obtenerPermisos(): Array<Permiso>
+  + actualizarUltimoAcceso(): Boolean
+}
+
+class Rol {
+  - id: UUID
+  - codigo: String
+  - nombre: String
+  - descripcion: Text
+  - modulo: String
+  - requiere_mfa: Boolean
+  - activo: Boolean
+  __
+  + asignarPermisos(permisos: Array<Permiso>): Boolean
+  + verificarPermiso(recurso: String, accion: String): Boolean
+}
+
+class Permiso {
+  - id: UUID
+  - recurso: String
+  - accion: String
+  - descripcion: Text
+  __
+  + validar(usuario: Usuario, recurso: String, accion: String): Boolean
+}
+
+class EventoAuditoria {
+  - id: UUID
+  - trace_id: UUID
+  - timestamp: DateTime
+  - usuario_id: UUID
+  - accion: String
+  - recurso: String
+  - modulo: String
+  - detalles: JSON
+  - ip_address: String
+  - user_agent: String
+  - resultado: String
+  __
+  + registrar(): Boolean
+  + consultar(filtros: JSON): Array<EventoAuditoria>
+}
+
+class Inventario {
+  - id: UUID
+  - codigo: String
+  - nombre: String
+  - categoria: String
+  - tipo: String
+  - unidad_medida: String
+  - cantidad_actual: Decimal
+  - cantidad_minima: Decimal
+  - ubicacion: String
+  - fecha_vencimiento: Date
+  - proveedor: String
+  - created_at: DateTime
+  - updated_at: DateTime
+  __
+  + registrarIngreso(cantidad: Decimal): Boolean
+  + registrarSalida(cantidad: Decimal): Boolean
+  + verificarStock(): Boolean
+  + generarAlerta(): Boolean
+}
+
+class Indicador {
+  - id: UUID
+  - codigo: String
+  - nombre: String
+  - descripcion: Text
+  - tipo: String
+  - unidad_medida: String
+  - formula: Text
+  - frecuencia_actualizacion: String
+  - activo: Boolean
+  __
+  + calcular(parametros: JSON): Decimal
+  + obtenerSerie(fecha_inicio: Date, fecha_fin: Date): Array<PuntoIndicador>
+}
+
+class PuntoIndicador {
+  - id: UUID
+  - indicador_id: UUID
+  - fecha: Date
+  - valor: Decimal
+  - dimensiones: JSON
+  - calidad: String
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+}
+
+' Relaciones
+Animal "1" -- "1" HistorialClinico : tiene >
+HistorialClinico "1" -- "0..*" Consulta : contiene >
+HistorialClinico "1" -- "0..*" Vacuna : registra >
+HistorialClinico "1" -- "0..*" Tratamiento : incluye >
+Consulta "1" -- "0..*" Tratamiento : genera >
+Tratamiento "1" -- "0..*" Medicamento : prescribe >
+Animal "1" -- "0..*" Adopcion : puede ser adoptado >
+Adoptante "1" -- "0..*" Adopcion : solicita >
+Adopcion "1" -- "0..*" VisitaDomiciliaria : requiere >
+Denuncia "1" -- "0..1" Rescate : genera >
+Denunciante "1" -- "0..*" Denuncia : realiza >
+Rescate "0..1" -- "0..1" Animal : rescata >
+Usuario "1" -- "0..*" Rol : tiene >
+Rol "1" -- "0..*" Permiso : incluye >
+Usuario "1" -- "0..*" EventoAuditoria : genera >
+Usuario "1" -- "0..*" Consulta : realiza >
+Usuario "1" -- "0..*" Adopcion : evalúa >
+Usuario "1" -- "0..*" VisitaDomiciliaria : ejecuta >
+Usuario "1" -- "0..*" Denuncia : atiende >
+Indicador "1" -- "0..*" PuntoIndicador : compuesto por >
+
+note right of Animal
+  Entidad central que representa
+  a los animales en el sistema
+end note
+
+note right of HistorialClinico
+  Registro completo de atenciones
+  veterinarias y estado de salud
+end note
+
+note right of Adopcion
+  Control completo del proceso
+  de adopción y seguimiento
+end note
+
+note bottom of Usuario
+  Integración con sci-auth
+  y Directorio Activo
+end note
+
+@enduml

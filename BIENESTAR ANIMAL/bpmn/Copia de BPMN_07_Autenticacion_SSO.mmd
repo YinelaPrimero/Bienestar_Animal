@@ -1,0 +1,60 @@
+graph TD
+    Start([Inicio: Usuario accede al sistema]) --> Redirect[Sistema redirige a sci-auth]
+    Redirect --> ShowLogin[sci-auth muestra pantalla de login]
+    ShowLogin --> InputCred[Usuario ingresa credenciales]
+
+    InputCred --> ValidateAD[sci-auth valida con Directorio Activo]
+    ValidateAD --> ADCheck{¿Usuario existe en AD?}
+
+    ADCheck -->|Sí| ADAuth[AD autentica usuario]
+    ADCheck -->|No| LocalDB[sci-auth valida en BD local]
+
+    LocalDB --> LocalCheck{¿Usuario existe localmente?}
+    LocalCheck -->|No| AuthFail[Fallo de autenticación]
+    AuthFail --> ShowError[Mostrar error: Credenciales inválidas]
+    ShowError --> AuditFail[Registrar intento fallido en sci-audit]
+    AuditFail --> EndFail([Fin: Acceso denegado])
+
+    LocalCheck -->|Sí| LocalAuth[BD local autentica]
+    LocalAuth --> CheckRole[sci-auth verifica rol del usuario]
+    ADAuth --> CheckRole
+
+    CheckRole --> RoleDecision{¿Es rol crítico?}
+    RoleDecision -->|No| CheckModule
+
+    RoleDecision -->|Sí| RequireMFA[Solicitar código MFA]
+    RequireMFA --> SendMFA[Enviar código por correo electrónico]
+    SendMFA --> InputMFA[Usuario ingresa código MFA]
+    InputMFA --> ValidateMFA{¿Código válido?}
+
+    ValidateMFA -->|No| MFAFail[MFA fallido]
+    MFAFail --> ShowErrorMFA[Mostrar error: Código inválido]
+    ShowErrorMFA --> AuditMFAFail[Registrar fallo MFA en sci-audit]
+    AuditMFAFail --> EndFail
+
+    ValidateMFA -->|Sí| CheckModule
+
+    CheckModule[Identificar módulo: Bienestar Animal]
+    CheckModule --> LoadPerms[Cargar permisos desde sci-rbac]
+    LoadPerms --> FilterPerms[Filtrar permisos del módulo]
+    FilterPerms --> GenToken[Generar token JWT firmado]
+
+    GenToken --> AddClaims[Agregar claims específicos del módulo]
+    AddClaims --> CreateSession[Crear sesión de usuario]
+    CreateSession --> AuditSuccess[Registrar acceso exitoso en sci-audit]
+    AuditSuccess --> ReturnToken[Retornar token al sistema]
+    ReturnToken --> LoadDashboard[Cargar panel de Bienestar Animal]
+    LoadDashboard --> EndSuccess([Fin: Usuario autenticado])
+
+    style Start fill:#90EE90
+    style EndSuccess fill:#90EE90
+    style EndFail fill:#FFB6C1
+    style ADCheck fill:#FFD700
+    style LocalCheck fill:#FFD700
+    style RoleDecision fill:#FFD700
+    style ValidateMFA fill:#FFD700
+    style RequireMFA fill:#FFA500
+    style AuthFail fill:#FF6B6B
+    style MFAFail fill:#FF6B6B
+    style GenToken fill:#87CEEB
+    style LoadPerms fill:#87CEEB

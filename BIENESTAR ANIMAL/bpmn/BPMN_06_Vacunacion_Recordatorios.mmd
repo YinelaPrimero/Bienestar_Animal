@@ -1,0 +1,53 @@
+graph TD
+    Start([Inicio: Sistema de recordatorios]) --> CheckSchedule[Ejecutar tarea programada diaria]
+    CheckSchedule --> GetAnimals[Obtener lista de animales activos]
+    GetAnimals --> FilterVaccines[Filtrar próximas vacunas]
+
+    FilterVaccines --> CalculateDates[Calcular fechas de vencimiento]
+    CalculateDates --> HasDue{¿Hay vacunas próximas o vencidas?}
+
+    HasDue -->|No| End1([Fin: Sin vacunas pendientes])
+
+    HasDue -->|Sí| ClassifyUrgency[Clasificar por urgencia]
+    ClassifyUrgency --> CreateReminders[Crear recordatorios]
+
+    CreateReminders --> CheckStatus{Estado del animal}
+
+    CheckStatus -->|En Refugio| NotifyVet[Notificar a veterinario]
+    CheckStatus -->|Adoptado| NotifyAdopter[Notificar a adoptante]
+    CheckStatus -->|En Proceso Adopción| NotifyCoordinator[Notificar a coordinador]
+
+    NotifyVet --> VetSchedule[Veterinario agenda aplicación]
+    VetSchedule --> SaveAppointment
+
+    NotifyAdopter --> SendEmail[Enviar correo al adoptante]
+    SendEmail --> SendSMS[Enviar SMS recordatorio]
+    SendSMS --> LogNotification[Registrar notificación enviada]
+
+    NotifyCoordinator --> CoordinatorDecision{Decisión del coordinador}
+    CoordinatorDecision -->|Aplicar antes entrega| VetSchedule
+    CoordinatorDecision -->|Informar adoptante| SendEmail
+
+    LogNotification --> SaveAppointment[Guardar recordatorio]
+    SaveAppointment --> CheckCritical{¿Es vacuna crítica?}
+
+    CheckCritical -->|Sí| CreateAlert[Crear alerta en sistema]
+    CheckCritical -->|No| SaveDB
+
+    CreateAlert --> SetPriority[Establecer prioridad alta]
+    SetPriority --> SaveDB[(Guardar en Base de Datos)]
+
+    SaveDB --> AuditLog[Enviar evento a sci-audit]
+    AuditLog --> UpdateIndicators[Actualizar indicadores de salud]
+    UpdateIndicators --> GenerateReport[Generar reporte de vacunación]
+    GenerateReport --> End2([Fin: Recordatorios procesados])
+
+    style Start fill:#90EE90
+    style End1 fill:#90EE90
+    style End2 fill:#90EE90
+    style HasDue fill:#FFD700
+    style CheckStatus fill:#FFD700
+    style CheckCritical fill:#FFD700
+    style CoordinatorDecision fill:#FFD700
+    style CreateAlert fill:#FFA500
+    style SaveDB fill:#87CEEB

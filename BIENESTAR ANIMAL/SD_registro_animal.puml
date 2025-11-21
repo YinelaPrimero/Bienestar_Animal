@@ -1,0 +1,66 @@
+@startuml
+!theme plain
+title Diagrama de Secuencia - Registro de Animal Rescatado
+
+actor "Operador" as OP
+participant "API\nAnimales" as API
+participant "Servicio\nAnimales" as SA
+participant "sci-auth" as AUTH
+participant "Servicio\nHistorial" as SH
+database "Base de Datos" as DB
+participant "sci-audit" as AUD
+participant "Sistema de\nNotificaciones" as NOT
+
+OP -> API: POST /api/animales
+activate API
+API -> AUTH: Validar Token JWT
+activate AUTH
+AUTH --> API: Token Válido
+deactivate AUTH
+
+API -> SA: registrarAnimal(datos)
+activate SA
+
+SA -> SA: validarDatosObligatorios()
+alt Datos incompletos
+    SA --> API: Error 400: Datos incompletos
+    API --> OP: Error de validación
+else Datos completos
+    SA -> SA: generarCodigoUnico()
+    SA -> SA: evaluarCondicionFisica()
+    SA -> SA: asignarEstadoInicial()
+
+    SA -> DB: INSERT INTO animales
+    activate DB
+    DB --> SA: Animal creado
+    deactivate DB
+
+    SA -> SH: crearHistorialClinico(animal_id)
+    activate SH
+    SH -> DB: INSERT INTO historial_clinico
+    activate DB
+    DB --> SH: Historial creado
+    deactivate DB
+    SH --> SA: Historial ID
+    deactivate SH
+
+    alt Requiere atención urgente
+        SA -> SA: marcarComoUrgente()
+        SA -> NOT: notificarVeterinario(animal_id)
+        activate NOT
+        NOT --> SA: Notificación enviada
+        deactivate NOT
+    end
+
+    SA -> AUD: registrarEvento({\n  accion: "CREATE",\n  recurso: "animal",\n  detalles: {...}\n})
+    activate AUD
+    AUD --> SA: Evento registrado
+    deactivate AUD
+
+    SA --> API: Animal registrado exitosamente
+    deactivate SA
+    API --> OP: 201 Created\n{animal, historial_clinico}
+end
+deactivate API
+
+@enduml

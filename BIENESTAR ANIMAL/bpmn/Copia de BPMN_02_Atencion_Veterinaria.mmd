@@ -1,0 +1,50 @@
+graph TD
+    Start([Inicio: Solicitud de atención veterinaria]) --> SelectAnimal[Veterinario selecciona animal]
+    SelectAnimal --> LoadHistory[Sistema carga historial clínico]
+    LoadHistory --> InputMotivo[Veterinario registra motivo de consulta]
+
+    InputMotivo --> InputSintomas[Registrar síntomas y signos vitales]
+    InputSintomas --> InputDiagnostico[Ingresar diagnóstico]
+    InputDiagnostico --> TreatmentDecision{¿Requiere tratamiento?}
+
+    TreatmentDecision -->|No| InputObservations[Solo registrar observaciones]
+    TreatmentDecision -->|Sí| SelectTreatment[Seleccionar tipo de tratamiento]
+
+    SelectTreatment --> MedicineCheck{¿Incluye medicamentos?}
+    MedicineCheck -->|Sí| SelectMedicine[Seleccionar medicamentos]
+    MedicineCheck -->|No| InputProcedures
+
+    SelectMedicine --> CheckStock[Verificar stock en inventario]
+    CheckStock --> StockDecision{¿Hay suficiente stock?}
+
+    StockDecision -->|No| ShowAlert[Mostrar alerta de inventario bajo]
+    ShowAlert --> RequestSupply[Generar solicitud de suministros]
+    RequestSupply --> InputProcedures
+
+    StockDecision -->|Sí| UpdateStock[Actualizar inventario]
+    UpdateStock --> InputProcedures[Registrar procedimientos realizados]
+
+    InputProcedures --> InputRecomendaciones[Ingresar recomendaciones]
+    InputObservations --> ScheduleNext
+    InputRecomendaciones --> ScheduleNext{¿Requiere seguimiento?}
+
+    ScheduleNext -->|Sí| CreateAppointment[Agendar próxima consulta]
+    ScheduleNext -->|No| UpdateHistory
+    CreateAppointment --> SendReminder[Programar recordatorio]
+    SendReminder --> UpdateHistory
+
+    UpdateHistory[Actualizar historial clínico]
+    UpdateHistory --> SaveDB[(Guardar en Base de Datos)]
+    SaveDB --> AuditLog[Enviar evento a sci-audit]
+    AuditLog --> NotifyIndicators[Actualizar indicadores en sci-indicators]
+    NotifyIndicators --> Confirm[Mostrar confirmación de registro]
+    Confirm --> End([Fin: Consulta registrada])
+
+    style Start fill:#90EE90
+    style End fill:#90EE90
+    style TreatmentDecision fill:#FFD700
+    style MedicineCheck fill:#FFD700
+    style StockDecision fill:#FFD700
+    style ScheduleNext fill:#FFD700
+    style ShowAlert fill:#FFA500
+    style SaveDB fill:#87CEEB

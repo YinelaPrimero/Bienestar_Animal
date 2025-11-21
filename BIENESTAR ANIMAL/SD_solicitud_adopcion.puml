@@ -1,0 +1,166 @@
+@startuml
+!theme plain
+title Diagrama de Secuencia - Proceso de Solicitud de Adopción
+
+actor "Ciudadano" as CIU
+participant "Portal Web" as WEB
+participant "API\nAdopciones" as API
+participant "Servicio\nAdopciones" as SAD
+participant "sci-auth" as AUTH
+database "Base de Datos" as DB
+participant "Sistema de\nNotificaciones" as NOT
+participant "Servicio\nEvaluación" as SE
+participant "sci-audit" as AUD
+participant "sci-indicators" as IND
+
+CIU -> WEB: Completar formulario de adopción
+WEB -> API: POST /api/adopciones/solicitud
+activate API
+
+API -> AUTH: Validar sesión
+activate AUTH
+AUTH --> API: Sesión válida
+deactivate AUTH
+
+API -> SAD: crearSolicitud(datos)
+activate SAD
+
+SAD -> SAD: validarDatosAdoptante()
+SAD -> DB: SELECT * FROM animales\nWHERE id = ? AND estado = 'Disponible'
+activate DB
+DB --> SAD: Animal disponible
+deactivate DB
+
+alt Animal no disponible
+    SAD --> API: Error 409: Animal no disponible
+    API --> WEB: Animal ya no está disponible
+    WEB --> CIU: Mensaje de error
+else Animal disponible
+    SAD -> DB: INSERT INTO adoptantes
+    activate DB
+    DB --> SAD: Adoptante creado
+    deactivate DB
+
+    SAD -> DB: INSERT INTO adopciones
+    activate DB
+    DB --> SAD: Solicitud creada
+    deactivate DB
+
+    SAD -> DB: UPDATE animales\nSET estado = 'En Proceso Adopción'
+    activate DB
+    DB --> SAD: Estado actualizado
+    deactivate DB
+
+    SAD -> NOT: notificarCoordinador({\n  tipo: "nueva_solicitud",\n  adopcion_id: ?\n})
+    activate NOT
+    NOT --> SAD: Notificación enviada
+    deactivate NOT
+
+    SAD -> AUD: registrarEvento({\n  accion: "CREATE",\n  recurso: "solicitud_adopcion"\n})
+    activate AUD
+    AUD --> SAD: Evento registrado
+    deactivate AUD
+
+    SAD --> API: Solicitud creada
+    deactivate SAD
+    API --> WEB: 201 Created\n{solicitud, numero_ticket}
+    deactivate API
+    WEB --> CIU: Solicitud enviada exitosamente
+end
+
+== Proceso de Evaluación ==
+
+actor "Evaluador" as EVAL
+EVAL -> API: GET /api/adopciones/{id}
+activate API
+API -> AUTH: Validar Token y Permisos
+activate AUTH
+AUTH --> API: Autorizado
+deactivate AUTH
+
+API -> SAD: obtenerSolicitud(id)
+activate SAD
+SAD -> DB: SELECT * FROM adopciones\nWHERE id = ?
+activate DB
+DB --> SAD: Datos de solicitud
+deactivate DB
+SAD --> API: Solicitud completa
+deactivate SAD
+API --> EVAL: Datos del adoptante y animal
+deactivate API
+
+EVAL -> API: POST /api/adopciones/{id}/visita
+activate API
+API -> SE: agendarVisitaDomiciliaria(datos)
+activate SE
+
+SE -> DB: INSERT INTO visitas_domiciliarias
+activate DB
+DB --> SE: Visita programada
+deactivate DB
+
+SE -> NOT: notificarAdoptante({\n  fecha_visita: ?,\n  instrucciones: "..."\n})
+activate NOT
+NOT --> SE: Notificación enviada
+deactivate NOT
+
+SE --> API: Visita agendada
+deactivate SE
+API --> EVAL: Confirmación
+deactivate API
+
+== Registro de Visita ==
+
+EVAL -> API: POST /api/visitas/{id}/resultado
+activate API
+API -> SE: registrarVisita(datos)
+activate SE
+
+SE -> DB: UPDATE visitas_domiciliarias\nSET resultado = ?, observaciones = ?
+activate DB
+DB --> SE: Visita actualizada
+deactivate DB
+
+alt Visita aprobada
+    SE -> DB: UPDATE adopciones\nSET estado = 'Aprobada'
+    activate DB
+    DB --> SE: Estado actualizado
+    deactivate DB
+
+    SE -> NOT: notificarAdoptante({\n  resultado: "aprobado",\n  siguiente_paso: "entrega"\n})
+    activate NOT
+    NOT --> SE: Notificación enviada
+    deactivate NOT
+
+    SE -> IND: actualizarIndicador({\n  codigo: "adopciones_aprobadas",\n  incremento: 1\n})
+    activate IND
+    IND --> SE: Indicador actualizado
+    deactivate IND
+else Visita rechazada
+    SE -> DB: UPDATE adopciones\nSET estado = 'Rechazada'
+    activate DB
+    DB --> SE: Estado actualizado
+    deactivate DB
+
+    SE -> DB: UPDATE animales\nSET estado = 'Disponible'
+    activate DB
+    DB --> SE: Animal disponible nuevamente
+    deactivate DB
+
+    SE -> NOT: notificarAdoptante({\n  resultado: "rechazado",\n  motivo: "..."\n})
+    activate NOT
+    NOT --> SE: Notificación enviada
+    deactivate NOT
+end
+
+SE -> AUD: registrarEvento({\n  accion: "UPDATE",\n  recurso: "visita_domiciliaria"\n})
+activate AUD
+AUD --> SE: Evento registrado
+deactivate AUD
+
+SE --> API: Visita registrada
+deactivate SE
+API --> EVAL: Confirmación
+deactivate API
+
+@enduml

@@ -1,0 +1,64 @@
+graph TD
+    Start([Inicio: Ciudadano solicita adopción]) --> InputSolicitud[Ciudadano completa formulario de solicitud]
+    InputSolicitud --> InputDatos[Ingresar datos personales del adoptante]
+    InputDatos --> InputVivienda[Registrar información de vivienda]
+    InputVivienda --> InputExperiencia[Registrar experiencia con animales]
+
+    InputExperiencia --> SelectAnimal[Seleccionar animal a adoptar]
+    SelectAnimal --> CheckAvailable{¿Animal disponible?}
+
+    CheckAvailable -->|No| ShowError[Mostrar error: Animal no disponible]
+    ShowError --> EndFail([Fin: Solicitud rechazada])
+
+    CheckAvailable -->|Sí| SaveSolicitud[Guardar solicitud]
+    SaveSolicitud --> NotifyCoordinator[Notificar a coordinador de adopciones]
+    NotifyCoordinator --> AssignEvaluator[Asignar evaluador]
+
+    AssignEvaluator --> ReviewDocs[Evaluador revisa documentación]
+    ReviewDocs --> DocsComplete{¿Documentos completos?}
+
+    DocsComplete -->|No| RequestDocs[Solicitar documentos faltantes]
+    RequestDocs --> WaitDocs[Esperar respuesta del adoptante]
+    WaitDocs --> DocsComplete
+
+    DocsComplete -->|Sí| ScheduleVisit[Agendar visita domiciliaria]
+    ScheduleVisit --> PerformVisit[Realizar visita al hogar]
+    PerformVisit --> EvaluateHome[Evaluar condiciones del hogar]
+
+    EvaluateHome --> RecordObservations[Registrar observaciones]
+    RecordObservations --> HomeDecision{¿Hogar apto?}
+
+    HomeDecision -->|No| RejectSolicitud[Rechazar solicitud]
+    RejectSolicitud --> NotifyRejection[Notificar rechazo al adoptante]
+    NotifyRejection --> AuditReject[Registrar en sci-audit]
+    AuditReject --> EndFail
+
+    HomeDecision -->|Sí| ApproveSolicitud[Aprobar solicitud]
+    ApproveSolicitud --> ScheduleDelivery[Agendar entrega del animal]
+    ScheduleDelivery --> PrepareAnimal[Preparar animal para entrega]
+
+    PrepareAnimal --> CheckVaccines[Verificar vacunas al día]
+    CheckVaccines --> CheckSterilization[Verificar esterilización]
+    CheckSterilization --> GenerateContract[Generar contrato de adopción]
+
+    GenerateContract --> DeliverAnimal[Entregar animal al adoptante]
+    DeliverAnimal --> SignContract[Firmar contrato]
+    SignContract --> UpdateStatus[Actualizar estado: Adoptado]
+
+    UpdateStatus --> CreateFollowUp[Crear plan de seguimiento]
+    CreateFollowUp --> ScheduleFollowUp[Programar primera visita de seguimiento]
+    ScheduleFollowUp --> SaveDB[(Guardar en Base de Datos)]
+
+    SaveDB --> AuditLog[Enviar evento a sci-audit]
+    AuditLog --> NotifyIndicators[Actualizar indicadores]
+    NotifyIndicators --> Confirm[Notificar adopción exitosa]
+    Confirm --> End([Fin: Adopción completada])
+
+    style Start fill:#90EE90
+    style End fill:#90EE90
+    style EndFail fill:#FFB6C1
+    style CheckAvailable fill:#FFD700
+    style DocsComplete fill:#FFD700
+    style HomeDecision fill:#FFD700
+    style RejectSolicitud fill:#FF6B6B
+    style SaveDB fill:#87CEEB

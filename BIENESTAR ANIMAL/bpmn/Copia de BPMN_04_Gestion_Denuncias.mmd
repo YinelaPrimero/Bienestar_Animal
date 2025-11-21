@@ -1,0 +1,84 @@
+graph TD
+    Start([Inicio: Ciudadano reporta denuncia]) --> InputChannel{Canal de denuncia}
+
+    InputChannel -->|Web| FormWeb[Completar formulario web]
+    InputChannel -->|Telefónico| FormPhone[Operador registra llamada]
+    InputChannel -->|Presencial| FormPresencial[Operador registra denuncia]
+
+    FormWeb --> InputDetalles
+    FormPhone --> InputDetalles
+    FormPresencial --> InputDetalles
+
+    InputDetalles[Capturar detalles de la denuncia]
+    InputDetalles --> InputUbicacion[Registrar ubicación exacta]
+    InputUbicacion --> InputTipo[Clasificar tipo de denuncia]
+    InputTipo --> InputEvidencia{¿Incluye evidencia?}
+
+    InputEvidencia -->|Sí| UploadEvidence[Subir fotografías/videos]
+    InputEvidencia -->|No| InputDenunciante
+    UploadEvidence --> InputDenunciante
+
+    InputDenunciante[Registrar datos del denunciante]
+    InputDenunciante --> AnonimoCheck{¿Denuncia anónima?}
+
+    AnonimoCheck -->|Sí| SkipContact[Omitir datos de contacto]
+    AnonimoCheck -->|No| InputContact[Capturar datos de contacto]
+
+    SkipContact --> GenerateTicket
+    InputContact --> GenerateTicket[Sistema genera número de ticket]
+
+    GenerateTicket --> EvaluatePriority[Sistema evalúa prioridad]
+    EvaluatePriority --> PriorityDecision{Nivel de prioridad}
+
+    PriorityDecision -->|Urgente| AssignImmediate[Asignación inmediata]
+    PriorityDecision -->|Alta| AssignHigh[Asignación prioritaria]
+    PriorityDecision -->|Media| AssignQueue[Asignar a cola]
+    PriorityDecision -->|Baja| AssignScheduled[Programar atención]
+
+    AssignImmediate --> NotifyTeam[Notificar a equipo de rescate]
+    AssignHigh --> NotifyTeam
+    AssignQueue --> NotifyTeam
+    AssignScheduled --> NotifyTeam
+
+    NotifyTeam --> AssignResponsible[Asignar responsable]
+    AssignResponsible --> UpdateStatusInProgress[Estado: En Proceso]
+    UpdateStatusInProgress --> PlanRescue[Planificar operativo de rescate]
+
+    PlanRescue --> ExecuteRescue[Ejecutar rescate]
+    ExecuteRescue --> RescueResult{¿Rescate exitoso?}
+
+    RescueResult -->|No| RecordFailure[Registrar motivo de fallo]
+    RecordFailure --> FailureAnalysis[Analizar situación]
+    FailureAnalysis --> RequiresSupport{¿Requiere apoyo?}
+
+    RequiresSupport -->|Sí| RequestAuthority[Solicitar apoyo de autoridades]
+    RequiresSupport -->|No| UpdateStatusClosed
+    RequestAuthority --> FollowAuthority[Seguimiento con autoridades]
+    FollowAuthority --> UpdateStatusClosed
+
+    RescueResult -->|Sí| RegisterAnimal[Registrar animal rescatado]
+    RegisterAnimal --> FirstVetCheck[Primera atención veterinaria]
+    FirstVetCheck --> UpdateStatusResolved[Estado: Resuelto]
+
+    UpdateStatusResolved --> SaveDB
+    UpdateStatusClosed[Estado: Cerrado] --> SaveDB
+
+    SaveDB[(Guardar en Base de Datos)]
+    SaveDB --> AuditLog[Enviar evento a sci-audit]
+    AuditLog --> NotifyIndicators[Actualizar indicadores]
+    NotifyIndicators --> NotifyDenunciante{¿Denuncia anónima?}
+
+    NotifyDenunciante -->|No| SendNotification[Enviar notificación de resolución]
+    NotifyDenunciante -->|Sí| End
+    SendNotification --> End([Fin: Denuncia gestionada])
+
+    style Start fill:#90EE90
+    style End fill:#90EE90
+    style PriorityDecision fill:#FFD700
+    style AnonimoCheck fill:#FFD700
+    style InputEvidencia fill:#FFD700
+    style RescueResult fill:#FFD700
+    style RequiresSupport fill:#FFD700
+    style NotifyDenunciante fill:#FFD700
+    style AssignImmediate fill:#FF6B6B
+    style SaveDB fill:#87CEEB

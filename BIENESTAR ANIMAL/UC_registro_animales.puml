@@ -1,0 +1,62 @@
+@startuml
+!theme plain
+title Casos de Uso - Registro y Gestión de Animales
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Operador" as OP
+actor "Veterinario" as VET
+actor "Coordinador" as COORD
+actor "Sistema SCI" as SCI
+
+rectangle "Módulo de Registro y Gestión de Animales" {
+  usecase "Registrar Animal\nRescatado" as UC1
+  usecase "Capturar Datos\nBásicos" as UC2
+  usecase "Registrar Especie\ny Raza" as UC3
+  usecase "Evaluar Condición\nFísica Inicial" as UC4
+  usecase "Generar Código\nÚnico" as UC5
+  usecase "Crear Historial\nClínico" as UC6
+  usecase "Tomar Fotografía" as UC7
+  usecase "Asignar Estado\nInicial" as UC8
+  usecase "Consultar Animal" as UC9
+  usecase "Actualizar Información\ndel Animal" as UC10
+  usecase "Cambiar Estado\ndel Animal" as UC11
+  usecase "Generar Ficha\nCompleta" as UC12
+  usecase "Marcar como\nPrioridad Urgente" as UC13
+  usecase "Notificar a\nVeterinario" as UC14
+  usecase "Listar Animales\npor Estado" as UC15
+  usecase "Buscar Animal\npor Criterios" as UC16
+}
+
+OP --> UC1
+UC1 ..> UC2 : <<include>>
+UC1 ..> UC3 : <<include>>
+UC1 ..> UC4 : <<include>>
+UC1 ..> UC5 : <<include>>
+UC1 ..> UC6 : <<include>>
+UC1 ..> UC8 : <<include>>
+UC1 ..> UC7 : <<extend>>
+UC1 ..> UC13 : <<extend>>
+UC13 ..> UC14 : <<include>>
+UC5 --> SCI : genera
+UC6 --> SCI : valida
+
+OP --> UC9
+OP --> UC10
+COORD --> UC10
+VET --> UC10
+UC10 ..> UC11 : <<extend>>
+
+OP --> UC12
+COORD --> UC12
+
+OP --> UC15
+COORD --> UC15
+VET --> UC15
+
+OP --> UC16
+COORD --> UC16
+VET --> UC16
+
+@enduml

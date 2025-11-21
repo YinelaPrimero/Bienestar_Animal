@@ -1,0 +1,98 @@
+@startuml
+!theme plain
+title Casos de Uso - Administración y Reportes
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Administrador" as ADMIN
+actor "Coordinador" as COORD
+actor "Gerente" as GER
+actor "Sistema SCI" as SCI
+actor "sci-indicators" as IND
+
+rectangle "Módulo de Administración" {
+  usecase "Gestionar Usuarios" as UC1
+  usecase "Crear Usuario" as UC2
+  usecase "Actualizar Usuario" as UC3
+  usecase "Desactivar Usuario" as UC4
+  usecase "Asignar Roles" as UC5
+  usecase "Configurar Permisos" as UC6
+
+  usecase "Gestionar Inventario\nde Insumos" as UC7
+  usecase "Registrar Ingreso\nde Insumos" as UC8
+  usecase "Registrar Salida\nde Insumos" as UC9
+  usecase "Consultar Stock\nActual" as UC10
+  usecase "Configurar Alertas\nde Stock Bajo" as UC11
+  usecase "Generar Orden\nde Compra" as UC12
+
+  usecase "Configurar Tipos\nde Vacuna" as UC13
+  usecase "Configurar Productos\nFarmacéuticos" as UC14
+  usecase "Configurar Especies\ny Razas" as UC15
+
+  usecase "Generar Reporte\nde Animales" as UC16
+  usecase "Generar Reporte\nde Adopciones" as UC17
+  usecase "Generar Reporte\nde Denuncias" as UC18
+  usecase "Generar Reporte\nde Consultas Veterinarias" as UC19
+  usecase "Generar Reporte\nde Vacunación" as UC20
+  usecase "Generar Reporte\nde Inventarios" as UC21
+
+  usecase "Consultar Dashboard\nEjecutivo" as UC22
+  usecase "Visualizar Indicadores\nClave" as UC23
+  usecase "Exportar Datos\na Excel" as UC24
+  usecase "Programar Reportes\nAutomáticos" as UC25
+
+  usecase "Consultar Auditoría" as UC26
+  usecase "Filtrar Eventos\nde Auditoría" as UC27
+  usecase "Generar Reporte\nde Auditoría" as UC28
+
+  usecase "Configurar Parámetros\ndel Sistema" as UC29
+  usecase "Gestionar Copias\nde Seguridad" as UC30
+}
+
+ADMIN --> UC1
+UC1 ..> UC2 : <<extend>>
+UC1 ..> UC3 : <<extend>>
+UC1 ..> UC4 : <<extend>>
+UC1 ..> UC5 : <<include>>
+UC5 ..> UC6 : <<include>>
+UC5 --> SCI : consulta sci-rbac
+
+COORD --> UC7
+UC7 ..> UC8 : <<extend>>
+UC7 ..> UC9 : <<extend>>
+COORD --> UC10
+COORD --> UC11
+UC11 --> SCI : configura alertas
+COORD --> UC12
+
+ADMIN --> UC13
+ADMIN --> UC14
+ADMIN --> UC15
+
+COORD --> UC16
+COORD --> UC17
+COORD --> UC18
+COORD --> UC19
+COORD --> UC20
+COORD --> UC21
+
+GER --> UC22
+UC22 ..> UC23 : <<include>>
+UC23 --> IND : consulta
+
+COORD --> UC24
+GER --> UC24
+
+ADMIN --> UC25
+UC25 --> SCI : programa
+
+ADMIN --> UC26
+UC26 ..> UC27 : <<extend>>
+UC26 --> SCI : consulta sci-audit
+ADMIN --> UC28
+
+ADMIN --> UC29
+ADMIN --> UC30
+
+@enduml

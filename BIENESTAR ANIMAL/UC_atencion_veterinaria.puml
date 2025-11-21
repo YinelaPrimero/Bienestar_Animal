@@ -1,0 +1,72 @@
+@startuml
+!theme plain
+title Casos de Uso - Atención Veterinaria y Bienestar Animal
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Veterinario" as VET
+actor "Asistente\nVeterinario" as ASIST
+actor "Sistema SCI" as SCI
+actor "Sistema de\nInventario" as INV
+
+rectangle "Módulo de Atención Veterinaria" {
+  usecase "Registrar Consulta\nVeterinaria" as UC1
+  usecase "Cargar Historial\nClínico" as UC2
+  usecase "Registrar Signos\nVitales" as UC3
+  usecase "Ingresar Diagnóstico" as UC4
+  usecase "Prescribir Tratamiento" as UC5
+  usecase "Seleccionar\nMedicamentos" as UC6
+  usecase "Verificar Stock\nde Medicamentos" as UC7
+  usecase "Actualizar Inventario" as UC8
+  usecase "Registrar\nProcedimientos" as UC9
+  usecase "Programar Cirugía" as UC10
+  usecase "Registrar Cirugía\nRealizada" as UC11
+  usecase "Aplicar Vacuna" as UC12
+  usecase "Programar\nRecordatorios" as UC13
+  usecase "Solicitar Exámenes\nde Laboratorio" as UC14
+  usecase "Registrar Resultados\nde Exámenes" as UC15
+  usecase "Agendar Próxima\nConsulta" as UC16
+  usecase "Actualizar Historial\nClínico" as UC17
+  usecase "Generar Receta\nMédica" as UC18
+  usecase "Generar Reporte\nQuirúrgico" as UC19
+  usecase "Consultar Historial\nCompleto" as UC20
+}
+
+VET --> UC1
+UC1 ..> UC2 : <<include>>
+UC1 ..> UC3 : <<include>>
+UC1 ..> UC4 : <<include>>
+UC1 ..> UC5 : <<extend>>
+UC1 ..> UC17 : <<include>>
+UC1 ..> UC16 : <<extend>>
+
+UC5 ..> UC6 : <<include>>
+UC6 ..> UC7 : <<include>>
+UC7 --> INV : consulta
+UC7 ..> UC8 : <<include>>
+UC8 --> INV : actualiza
+
+UC5 ..> UC9 : <<extend>>
+UC5 ..> UC18 : <<extend>>
+
+VET --> UC10
+UC10 ..> UC2 : <<include>>
+VET --> UC11
+UC11 ..> UC5 : <<include>>
+UC11 ..> UC19 : <<include>>
+
+VET --> UC12
+ASIST --> UC12
+UC12 ..> UC13 : <<include>>
+UC13 --> SCI : programa
+
+VET --> UC14
+VET --> UC15
+
+VET --> UC20
+ASIST --> UC20
+
+UC17 --> SCI : audita
+
+@enduml

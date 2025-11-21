@@ -1,0 +1,172 @@
+@startuml
+!theme plain
+title Diagrama de Secuencia - Autenticación SSO con MFA
+
+actor "Usuario" as USR
+participant "Aplicación\nBienestar Animal" as APP
+participant "sci-gateway" as GW
+participant "sci-auth" as AUTH
+participant "Directorio\nActivo" as AD
+database "BD Local\nsci-auth" as DB
+participant "sci-rbac" as RBAC
+participant "Servicio\nEmail" as EMAIL
+participant "sci-audit" as AUD
+
+USR -> APP: Acceder al sistema
+activate APP
+APP -> GW: Redirigir a /auth/login
+activate GW
+GW -> AUTH: GET /login
+activate AUTH
+AUTH --> GW: Página de login
+deactivate AUTH
+GW --> APP: Página de login
+deactivate GW
+APP --> USR: Mostrar formulario de login
+deactivate APP
+
+USR -> APP: Ingresar credenciales
+activate APP
+APP -> GW: POST /auth/authenticate
+activate GW
+GW -> AUTH: authenticate(username, password)
+activate AUTH
+
+AUTH -> AD: Validar usuario en AD
+activate AD
+AD --> AUTH: Usuario encontrado/no encontrado
+deactivate AD
+
+alt Usuario existe en AD
+    AUTH -> AD: Autenticar(username, password)
+    activate AD
+    AD --> AUTH: Autenticación exitosa
+    deactivate AD
+    AUTH -> AUTH: Obtener datos de usuario
+else Usuario no existe en AD
+    AUTH -> DB: SELECT * FROM usuarios\nWHERE username = ?
+    activate DB
+    DB --> AUTH: Usuario local
+    deactivate DB
+
+    alt Usuario no existe localmente
+        AUTH --> GW: Error 401: Credenciales inválidas
+        GW --> APP: Error de autenticación
+        APP --> USR: Credenciales incorrectas
+
+        AUTH -> AUD: registrarEvento({\n  accion: "LOGIN_FAILED",\n  usuario: ?,\n  motivo: "credenciales_invalidas"\n})
+        activate AUD
+        AUD --> AUTH: Evento registrado
+        deactivate AUD
+        deactivate AUTH
+        deactivate GW
+        deactivate APP
+    else Usuario existe localmente
+        AUTH -> AUTH: Validar password hash
+        alt Password incorrecto
+            AUTH --> GW: Error 401: Credenciales inválidas
+            GW --> APP: Error de autenticación
+            APP --> USR: Credenciales incorrectas
+
+            AUTH -> AUD: registrarEvento({\n  accion: "LOGIN_FAILED"\n})
+            activate AUD
+            AUD --> AUTH: Evento registrado
+            deactivate AUD
+            deactivate AUTH
+            deactivate GW
+            deactivate APP
+        end
+    end
+end
+
+AUTH -> RBAC: obtenerRoles(usuario_id)
+activate RBAC
+RBAC -> DB: SELECT roles FROM usuario_roles\nWHERE usuario_id = ?
+activate DB
+DB --> RBAC: Roles del usuario
+deactivate DB
+RBAC --> AUTH: Lista de roles
+deactivate RBAC
+
+AUTH -> AUTH: verificarRolCritico(roles)
+
+alt Rol requiere MFA
+    AUTH -> AUTH: generarCodigoMFA()
+
+    AUTH -> DB: INSERT INTO mfa_tokens\n(usuario_id, codigo, expiracion)
+    activate DB
+    DB --> AUTH: Token MFA creado
+    deactivate DB
+
+    AUTH -> EMAIL: enviarCodigoMFA({\n  email: ?,\n  codigo: ?\n})
+    activate EMAIL
+    EMAIL --> AUTH: Email enviado
+    deactivate EMAIL
+
+    AUTH --> GW: MFA requerido
+    GW --> APP: Solicitar código MFA
+    deactivate AUTH
+    deactivate GW
+    APP --> USR: Ingrese código MFA
+    deactivate APP
+
+    USR -> APP: Ingresar código MFA
+    activate APP
+    APP -> GW: POST /auth/verify-mfa
+    activate GW
+    GW -> AUTH: verifyMFA(usuario_id, codigo)
+    activate AUTH
+
+    AUTH -> DB: SELECT * FROM mfa_tokens\nWHERE usuario_id = ? AND codigo = ?
+    activate DB
+    DB --> AUTH: Token MFA
+    deactivate DB
+
+    alt Código inválido o expirado
+        AUTH --> GW: Error 401: Código MFA inválido
+        GW --> APP: Error MFA
+        APP --> USR: Código incorrecto
+
+        AUTH -> AUD: registrarEvento({\n  accion: "MFA_FAILED"\n})
+        activate AUD
+        AUD --> AUTH: Evento registrado
+        deactivate AUD
+        deactivate AUTH
+        deactivate GW
+        deactivate APP
+    end
+end
+
+AUTH -> RBAC: obtenerPermisos(usuario_id, modulo: "bienestar_animal")
+activate RBAC
+RBAC -> DB: SELECT permisos\nFROM rol_permisos\nWHERE modulo = ?
+activate DB
+DB --> RBAC: Permisos del módulo
+deactivate DB
+RBAC --> AUTH: Lista de permisos
+deactivate RBAC
+
+AUTH -> AUTH: generarTokenJWT({\n  usuario_id,\n  roles,\n  permisos,\n  modulo: "bienestar_animal"\n})
+
+AUTH -> DB: INSERT INTO sesiones\n(usuario_id, token, expiracion)
+activate DB
+DB --> AUTH: Sesión creada
+deactivate DB
+
+AUTH -> AUD: registrarEvento({\n  accion: "LOGIN_SUCCESS",\n  usuario_id: ?,\n  modulo: "bienestar_animal"\n})
+activate AUD
+AUD --> AUTH: Evento registrado
+deactivate AUD
+
+AUTH --> GW: Token JWT + datos usuario
+deactivate AUTH
+GW --> APP: Autenticación exitosa\n{token, usuario, permisos}
+deactivate GW
+
+APP -> APP: Almacenar token en sesión
+APP -> APP: Cargar panel de Bienestar Animal
+
+APP --> USR: Dashboard del sistema
+deactivate APP
+
+@enduml

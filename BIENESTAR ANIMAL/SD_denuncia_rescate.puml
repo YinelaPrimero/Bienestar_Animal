@@ -1,0 +1,186 @@
+@startuml
+!theme plain
+title Diagrama de Secuencia - Denuncia y Rescate de Animal
+
+actor "Ciudadano" as CIU
+participant "Portal Web" as WEB
+participant "API\nDenuncias" as API
+participant "Servicio\nDenuncias" as SD
+participant "sci-auth" as AUTH
+database "Base de Datos" as DB
+participant "Sistema de\nNotificaciones" as NOT
+participant "Servicio\nRescate" as SR
+participant "Servicio\nAnimales" as SA
+participant "sci-audit" as AUD
+participant "sci-indicators" as IND
+
+CIU -> WEB: Reportar denuncia
+WEB -> API: POST /api/denuncias
+activate API
+
+alt Usuario autenticado
+    API -> AUTH: Validar Token
+    activate AUTH
+    AUTH --> API: Token válido
+    deactivate AUTH
+else Denuncia anónima
+    API -> API: Procesar sin autenticación
+end
+
+API -> SD: crearDenuncia(datos)
+activate SD
+
+SD -> SD: validarDatos()
+SD -> SD: generarNumeroTicket()
+SD -> SD: evaluarPrioridad(tipo, descripcion)
+
+SD -> DB: INSERT INTO denuncias
+activate DB
+DB --> SD: Denuncia creada
+deactivate DB
+
+alt Incluye evidencias
+    SD -> SD: almacenarEvidencias(fotos, videos)
+end
+
+SD -> NOT: notificarCoordinadorRescate({\n  denuncia_id: ?,\n  prioridad: ?,\n  ubicacion: ?\n})
+activate NOT
+NOT --> SD: Notificación enviada
+deactivate NOT
+
+SD -> AUD: registrarEvento({\n  accion: "CREATE",\n  recurso: "denuncia",\n  ticket: ?\n})
+activate AUD
+AUD --> SD: Evento registrado
+deactivate AUD
+
+SD -> IND: actualizarIndicador({\n  codigo: "denuncias_recibidas",\n  incremento: 1\n})
+activate IND
+IND --> SD: Indicador actualizado
+deactivate IND
+
+SD --> API: Denuncia registrada
+deactivate SD
+API --> WEB: 201 Created\n{denuncia, numero_ticket}
+deactivate API
+WEB --> CIU: Denuncia registrada\nTicket: XXXX-XXXX
+
+== Asignación de Responsable ==
+
+actor "Coordinador" as COORD
+COORD -> API: PUT /api/denuncias/{id}/asignar
+activate API
+API -> AUTH: Validar Token y Permisos
+activate AUTH
+AUTH --> API: Autorizado
+deactivate AUTH
+
+API -> SD: asignarResponsable(denuncia_id, usuario_id)
+activate SD
+
+SD -> DB: UPDATE denuncias\nSET responsable_id = ?, estado = 'En Proceso'
+activate DB
+DB --> SD: Denuncia asignada
+deactivate DB
+
+SD -> NOT: notificarEquipoRescate({\n  denuncia_id: ?,\n  responsable: ?\n})
+activate NOT
+NOT --> SD: Notificación enviada
+deactivate NOT
+
+SD --> API: Asignación exitosa
+deactivate SD
+API --> COORD: Confirmación
+deactivate API
+
+== Ejecución de Rescate ==
+
+actor "Equipo Rescate" as RESCATE
+RESCATE -> API: POST /api/denuncias/{id}/rescate
+activate API
+API -> SR: ejecutarRescate(denuncia_id, datos)
+activate SR
+
+SR -> DB: INSERT INTO rescates
+activate DB
+DB --> SR: Rescate registrado
+deactivate DB
+
+alt Rescate exitoso
+    SR -> SA: registrarAnimal(datos_animal)
+    activate SA
+
+    SA -> SA: generarCodigoUnico()
+    SA -> DB: INSERT INTO animales
+    activate DB
+    DB --> SA: Animal registrado
+    deactivate DB
+
+    SA -> DB: INSERT INTO historial_clinico
+    activate DB
+    DB --> SA: Historial creado
+    deactivate DB
+
+    SA --> SR: Animal registrado (animal_id)
+    deactivate SA
+
+    SR -> DB: UPDATE rescates\nSET exitoso = true, animal_rescatado_id = ?
+    activate DB
+    DB --> SR: Rescate actualizado
+    deactivate DB
+
+    SR -> DB: UPDATE denuncias\nSET estado = 'Resuelto'
+    activate DB
+    DB --> SR: Denuncia resuelta
+    deactivate DB
+
+    SR -> NOT: notificarPrimeraAtencion({\n  animal_id: ?,\n  urgente: true\n})
+    activate NOT
+    NOT --> SR: Veterinario notificado
+    deactivate NOT
+
+    alt Denuncia no anónima
+        SR -> DB: SELECT email FROM denunciantes\nWHERE denuncia_id = ?
+        activate DB
+        DB --> SR: Email denunciante
+        deactivate DB
+
+        SR -> NOT: notificarDenunciante({\n  resultado: "exitoso",\n  animal_id: ?\n})
+        activate NOT
+        NOT --> SR: Notificación enviada
+        deactivate NOT
+    end
+
+    SR -> IND: actualizarIndicador({\n  codigo: "rescates_exitosos",\n  incremento: 1\n})
+    activate IND
+    IND --> SR: Indicador actualizado
+    deactivate IND
+else Rescate fallido
+    SR -> DB: UPDATE rescates\nSET exitoso = false, motivo_fallo = ?
+    activate DB
+    DB --> SR: Rescate actualizado
+    deactivate DB
+
+    SR -> DB: UPDATE denuncias\nSET observaciones_resolucion = ?
+    activate DB
+    DB --> SR: Observaciones registradas
+    deactivate DB
+
+    alt Requiere apoyo autoridades
+        SR -> NOT: solicitarApoyoAutoridades({\n  denuncia_id: ?,\n  motivo: ?\n})
+        activate NOT
+        NOT --> SR: Solicitud enviada
+        deactivate NOT
+    end
+end
+
+SR -> AUD: registrarEvento({\n  accion: "EXECUTE",\n  recurso: "rescate",\n  resultado: ?\n})
+activate AUD
+AUD --> SR: Evento registrado
+deactivate AUD
+
+SR --> API: Rescate procesado
+deactivate SR
+API --> RESCATE: Confirmación de rescate
+deactivate API
+
+@enduml

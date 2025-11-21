@@ -1,0 +1,72 @@
+graph TD
+    Start([Inicio: Operación del sistema]) --> UserAction[Usuario ejecuta acción]
+    UserAction --> CallAPI[Aplicación invoca API]
+
+    CallAPI --> Gateway[Solicitud llega a sci-gateway]
+    Gateway --> ValidateToken[sci-gateway valida token JWT]
+    ValidateToken --> TokenValid{¿Token válido?}
+
+    TokenValid -->|No| Return401[Retornar 401 Unauthorized]
+    Return401 --> EndFail([Fin: Acceso denegado])
+
+    TokenValid -->|Sí| CheckPerms[sci-gateway consulta permisos en sci-rbac]
+    CheckPerms --> RBACValidate[sci-rbac valida recurso y acción]
+    RBACValidate --> PermDecision{¿Tiene permiso?}
+
+    PermDecision -->|No| Return403[Retornar 403 Forbidden]
+    Return403 --> AuditDenied[Registrar acceso denegado en sci-audit]
+    AuditDenied --> EndFail
+
+    PermDecision -->|Sí| RouteRequest[sci-gateway enruta solicitud]
+    RouteRequest --> ServiceType{Tipo de operación}
+
+    ServiceType -->|CRUD Animal| AnimalService[Servicio de Animales]
+    ServiceType -->|Atención Veterinaria| VetService[Servicio Veterinario]
+    ServiceType -->|Adopción| AdoptionService[Servicio de Adopciones]
+    ServiceType -->|Denuncia| ComplaintService[Servicio de Denuncias]
+    ServiceType -->|Inventario| InventoryService[Servicio de Inventario]
+
+    AnimalService --> ProcessRequest[Procesar solicitud]
+    VetService --> ProcessRequest
+    AdoptionService --> ProcessRequest
+    ComplaintService --> ProcessRequest
+    InventoryService --> ProcessRequest
+
+    ProcessRequest --> DBOperation[(Operación en Base de Datos)]
+    DBOperation --> OperationResult{¿Operación exitosa?}
+
+    OperationResult -->|No| ReturnError[Retornar error]
+    ReturnError --> AuditError[Registrar error en sci-audit]
+    AuditError --> EndError([Fin: Operación fallida])
+
+    OperationResult -->|Sí| PrepareResponse[Preparar respuesta]
+    PrepareResponse --> SendAudit[Enviar evento a sci-audit]
+
+    SendAudit --> CheckIndicators{¿Actualizar indicadores?}
+    CheckIndicators -->|Sí| UpdateIndicators[Actualizar sci-indicators]
+    CheckIndicators -->|No| ReturnResponse
+
+    UpdateIndicators --> CalculateMetrics[Calcular métricas]
+    CalculateMetrics --> StoreMetrics[Almacenar en sci-indicators]
+    StoreMetrics --> ReturnResponse[Retornar respuesta exitosa]
+
+    ReturnResponse --> GatewayResponse[sci-gateway retorna respuesta]
+    GatewayResponse --> ClientReceive[Cliente recibe respuesta]
+    ClientReceive --> UpdateUI[Actualizar interfaz de usuario]
+    UpdateUI --> EndSuccess([Fin: Operación completada])
+
+    style Start fill:#90EE90
+    style EndSuccess fill:#90EE90
+    style EndFail fill:#FFB6C1
+    style EndError fill:#FFB6C1
+    style TokenValid fill:#FFD700
+    style PermDecision fill:#FFD700
+    style ServiceType fill:#FFD700
+    style OperationResult fill:#FFD700
+    style CheckIndicators fill:#FFD700
+    style Return401 fill:#FF6B6B
+    style Return403 fill:#FF6B6B
+    style Gateway fill:#87CEEB
+    style CheckPerms fill:#87CEEB
+    style SendAudit fill:#87CEEB
+    style DBOperation fill:#87CEEB

@@ -1,0 +1,88 @@
+@startuml
+!theme plain
+title Casos de Uso - Adopciones y Seguimiento Post-Adopción
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Ciudadano" as CIU
+actor "Operador" as OP
+actor "Coordinador\nAdopciones" as COORD
+actor "Evaluador" as EVAL
+actor "Visitador" as VIS
+actor "Sistema SCI" as SCI
+
+rectangle "Módulo de Adopciones" {
+  usecase "Solicitar Adopción" as UC1
+  usecase "Completar Formulario\nde Solicitud" as UC2
+  usecase "Registrar Datos\ndel Adoptante" as UC3
+  usecase "Seleccionar Animal\na Adoptar" as UC4
+  usecase "Verificar Disponibilidad\ndel Animal" as UC5
+  usecase "Asignar Evaluador" as UC6
+  usecase "Revisar Documentación" as UC7
+  usecase "Solicitar Documentos\nFaltantes" as UC8
+  usecase "Agendar Visita\nDomiciliaria" as UC9
+  usecase "Realizar Visita\nal Hogar" as UC10
+  usecase "Evaluar Condiciones\ndel Hogar" as UC11
+  usecase "Registrar Observaciones\nde la Visita" as UC12
+  usecase "Aprobar Solicitud" as UC13
+  usecase "Rechazar Solicitud" as UC14
+  usecase "Programar Entrega\ndel Animal" as UC15
+  usecase "Preparar Animal\npara Entrega" as UC16
+  usecase "Verificar Vacunas" as UC17
+  usecase "Verificar Esterilización" as UC18
+  usecase "Generar Contrato\nde Adopción" as UC19
+  usecase "Entregar Animal" as UC20
+  usecase "Firmar Contrato" as UC21
+  usecase "Crear Plan de\nSeguimiento" as UC22
+  usecase "Programar Visitas\nde Seguimiento" as UC23
+  usecase "Realizar Visita\nPost-Adopción" as UC24
+  usecase "Evaluar Estado\ndel Animal Adoptado" as UC25
+  usecase "Generar Reporte\nde Seguimiento" as UC26
+  usecase "Revocar Adopción" as UC27
+  usecase "Recuperar Animal" as UC28
+  usecase "Consultar Estado\nde Solicitud" as UC29
+}
+
+CIU --> UC1
+UC1 ..> UC2 : <<include>>
+UC1 ..> UC3 : <<include>>
+UC1 ..> UC4 : <<include>>
+UC1 ..> UC5 : <<include>>
+
+COORD --> UC6
+UC6 --> SCI : notifica
+
+EVAL --> UC7
+UC7 ..> UC8 : <<extend>>
+
+EVAL --> UC9
+EVAL --> UC10
+UC10 ..> UC11 : <<include>>
+UC10 ..> UC12 : <<include>>
+
+EVAL --> UC13
+EVAL --> UC14
+UC13 ..> UC15 : <<include>>
+
+OP --> UC16
+UC16 ..> UC17 : <<include>>
+UC16 ..> UC18 : <<include>>
+
+COORD --> UC19
+COORD --> UC20
+UC20 ..> UC21 : <<include>>
+UC20 ..> UC22 : <<include>>
+UC22 ..> UC23 : <<include>>
+
+VIS --> UC24
+UC24 ..> UC25 : <<include>>
+UC24 ..> UC26 : <<include>>
+
+COORD --> UC27
+UC27 ..> UC28 : <<include>>
+
+CIU --> UC29
+OP --> UC29
+
+@enduml

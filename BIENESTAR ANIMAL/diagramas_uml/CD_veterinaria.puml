@@ -1,0 +1,315 @@
+@startuml
+!theme plain
+title Diagrama de Clases - Módulo de Atención Veterinaria
+
+skinparam classAttributeIconSize 0
+
+class Animal {
+  - id: UUID
+  - codigo_unico: String
+  - nombre: String
+  - especie: String
+  - raza: String
+  - sexo: String
+  - edad_aproximada: Integer
+  - peso_actual: Decimal
+  - estado_salud: String
+  __
+  + obtenerHistorialClinico(): HistorialClinico
+  + actualizarEstadoSalud(estado: String): Boolean
+}
+
+class HistorialClinico {
+  - id: UUID
+  - animal_id: UUID
+  - fecha_apertura: DateTime
+  - estado: String
+  - created_at: DateTime
+  - updated_at: DateTime
+  __
+  + crear(): Boolean
+  + obtenerConsultas(): Array<Consulta>
+  + obtenerVacunas(): Array<Vacuna>
+  + obtenerTratamientos(): Array<Tratamiento>
+  + obtenerCirugias(): Array<Cirugia>
+  + generarResumen(): PDF
+  + verificarVacunasVigentes(): Boolean
+}
+
+class Consulta {
+  - id: UUID
+  - historial_clinico_id: UUID
+  - veterinario_id: UUID
+  - fecha_consulta: DateTime
+  - motivo: Text
+  - sintomas: Text
+  - signos_vitales: JSON
+  - temperatura: Decimal
+  - frecuencia_cardiaca: Integer
+  - frecuencia_respiratoria: Integer
+  - peso: Decimal
+  - diagnostico: Text
+  - diagnostico_diferencial: Text
+  - plan_diagnostico: Text
+  - observaciones: Text
+  - recomendaciones: Text
+  - proxima_cita: Date
+  - tipo_consulta: String
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + actualizar(): Boolean
+  + asociarTratamiento(tratamiento: Tratamiento): Boolean
+  + solicitarExamenes(): Array<ExamenLaboratorio>
+  + generarReceta(): PDF
+}
+
+class ExamenLaboratorio {
+  - id: UUID
+  - consulta_id: UUID
+  - tipo_examen: String
+  - fecha_solicitud: Date
+  - fecha_resultado: Date
+  - laboratorio: String
+  - resultados: JSON
+  - interpretacion: Text
+  - archivos_adjuntos: JSON
+  - estado: String
+  __
+  + solicitar(): Boolean
+  + registrarResultado(): Boolean
+  + interpretarResultado(): String
+}
+
+class Vacuna {
+  - id: UUID
+  - historial_clinico_id: UUID
+  - tipo_vacuna_id: UUID
+  - fecha_aplicacion: Date
+  - fecha_proxima_dosis: Date
+  - lote_vacuna: String
+  - fabricante: String
+  - veterinario_id: UUID
+  - observaciones: Text
+  - reacciones_adversas: Text
+  - estado: String
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + programarRecordatorio(): Boolean
+  + validarVencimiento(): Boolean
+  + notificarProximaDosis(): Boolean
+}
+
+class TipoVacuna {
+  - id: UUID
+  - codigo: String
+  - nombre: String
+  - descripcion: Text
+  - especie_aplicable: String
+  - edad_minima: Integer
+  - intervalo_dosis: Integer
+  - numero_dosis: Integer
+  - es_obligatoria: Boolean
+  - activo: Boolean
+  __
+  + obtenerEsquema(): JSON
+  + validarAplicabilidad(animal: Animal): Boolean
+}
+
+class Tratamiento {
+  - id: UUID
+  - consulta_id: UUID
+  - historial_clinico_id: UUID
+  - tipo_tratamiento: String
+  - descripcion: Text
+  - objetivo: Text
+  - fecha_inicio: Date
+  - fecha_fin: Date
+  - duracion_estimada: Integer
+  - estado: String
+  - efectividad: String
+  - observaciones: Text
+  - created_at: DateTime
+  __
+  + registrar(): Boolean
+  + asociarMedicamentos(medicamentos: Array<Medicamento>): Boolean
+  + asociarProcedimientos(procedimientos: Array<Procedimiento>): Boolean
+  + actualizarEstado(estado: String): Boolean
+  + evaluarEfectividad(): String
+  + finalizarTratamiento(): Boolean
+}
+
+class Medicamento {
+  - id: UUID
+  - tratamiento_id: UUID
+  - producto_id: UUID
+  - dosis: String
+  - frecuencia: String
+  - duracion_dias: Integer
+  - via_administracion: String
+  - instrucciones_especiales: Text
+  - observaciones: Text
+  - fecha_inicio: Date
+  - fecha_fin: Date
+  __
+  + registrar(): Boolean
+  + verificarStock(): Boolean
+  + descontarInventario(): Boolean
+  + validarInteracciones(): Array<String>
+}
+
+class ProductoFarmaceutico {
+  - id: UUID
+  - codigo: String
+  - nombre_comercial: String
+  - nombre_generico: String
+  - principio_activo: String
+  - presentacion: String
+  - concentracion: String
+  - laboratorio: String
+  - registro_sanitario: String
+  - fecha_vencimiento: Date
+  - stock_actual: Integer
+  - stock_minimo: Integer
+  - precio_unitario: Decimal
+  - requiere_receta: Boolean
+  - activo: Boolean
+  __
+  + registrarIngreso(cantidad: Integer): Boolean
+  + registrarSalida(cantidad: Integer): Boolean
+  + verificarDisponibilidad(): Boolean
+  + generarAlertaStock(): Boolean
+}
+
+class Procedimiento {
+  - id: UUID
+  - tratamiento_id: UUID
+  - tipo_procedimiento: String
+  - descripcion: Text
+  - fecha_realizacion: DateTime
+  - veterinario_id: UUID
+  - asistente_id: UUID
+  - duracion: Integer
+  - resultado: String
+  - complicaciones: Text
+  - observaciones: Text
+  __
+  + registrar(): Boolean
+  + asociarInsumos(insumos: Array<Insumo>): Boolean
+}
+
+class Cirugia {
+  - id: UUID
+  - historial_clinico_id: UUID
+  - tipo_cirugia: String
+  - descripcion: Text
+  - fecha_programada: Date
+  - fecha_realizacion: DateTime
+  - cirujano_id: UUID
+  - anestesiologo_id: UUID
+  - asistentes: JSON
+  - duracion: Integer
+  - tipo_anestesia: String
+  - complicaciones: Text
+  - resultado: String
+  - postoperatorio: Text
+  - seguimiento_requerido: Boolean
+  - estado: String
+  - created_at: DateTime
+  __
+  + programar(): Boolean
+  + registrar(): Boolean
+  + asociarTratamientoPost(tratamiento: Tratamiento): Boolean
+  + generarReporteQuirurgico(): PDF
+}
+
+class Insumo {
+  - id: UUID
+  - codigo: String
+  - nombre: String
+  - categoria: String
+  - unidad_medida: String
+  - stock_actual: Decimal
+  - stock_minimo: Decimal
+  - ubicacion: String
+  - fecha_vencimiento: Date
+  - activo: Boolean
+  __
+  + registrarIngreso(cantidad: Decimal): Boolean
+  + registrarSalida(cantidad: Decimal): Boolean
+  + verificarStock(): Boolean
+}
+
+class Veterinario {
+  - id: UUID
+  - usuario_id: UUID
+  - nombres: String
+  - apellidos: String
+  - numero_tarjeta_profesional: String
+  - especialidad: String
+  - telefono: String
+  - email: String
+  - activo: Boolean
+  __
+  + obtenerConsultas(fecha: Date): Array<Consulta>
+  + obtenerCirugiasProgramadas(): Array<Cirugia>
+  + verificarDisponibilidad(fecha: DateTime): Boolean
+}
+
+class RecordatorioVacuna {
+  - id: UUID
+  - vacuna_id: UUID
+  - animal_id: UUID
+  - fecha_recordatorio: Date
+  - tipo: String
+  - estado: String
+  - fecha_envio: DateTime
+  - canal: String
+  - destinatario: String
+  __
+  + programar(): Boolean
+  + enviar(): Boolean
+  + marcarComoEnviado(): Boolean
+}
+
+' Relaciones
+Animal "1" -- "1" HistorialClinico : posee >
+HistorialClinico "1" -- "0..*" Consulta : contiene >
+HistorialClinico "1" -- "0..*" Vacuna : registra >
+HistorialClinico "1" -- "0..*" Tratamiento : incluye >
+HistorialClinico "1" -- "0..*" Cirugia : documenta >
+Consulta "1" -- "0..*" Tratamiento : prescribe >
+Consulta "1" -- "0..*" ExamenLaboratorio : solicita >
+Vacuna "1" -- "1" TipoVacuna : es de tipo >
+Vacuna "1" -- "0..*" RecordatorioVacuna : genera >
+Tratamiento "1" -- "0..*" Medicamento : incluye >
+Tratamiento "1" -- "0..*" Procedimiento : requiere >
+Medicamento "1" -- "1" ProductoFarmaceutico : utiliza >
+Procedimiento "1" -- "0..*" Insumo : consume >
+Cirugia "1" -- "0..1" Tratamiento : genera >
+Veterinario "1" -- "0..*" Consulta : realiza >
+Veterinario "1" -- "0..*" Cirugia : ejecuta >
+Veterinario "1" -- "0..*" Vacuna : aplica >
+
+note right of HistorialClinico
+  Registro centralizado de toda
+  la información médica del animal
+end note
+
+note right of Consulta
+  Incluye signos vitales completos
+  y permite asociar tratamientos
+end note
+
+note right of Tratamiento
+  Puede incluir medicamentos,
+  procedimientos y seguimiento
+end note
+
+note bottom of ProductoFarmaceutico
+  Control de inventario integrado
+  con alertas de stock bajo
+end note
+
+@enduml

@@ -1,0 +1,85 @@
+graph TD
+    Start([Inicio: Programación de seguimiento]) --> CheckSchedule[Sistema verifica seguimientos pendientes]
+    CheckSchedule --> GetAdoptions[Obtener adopciones activas]
+    GetAdoptions --> FilterDue[Filtrar seguimientos vencidos]
+
+    FilterDue --> HasPending{¿Hay seguimientos pendientes?}
+
+    HasPending -->|No| End1([Fin: Sin seguimientos pendientes])
+
+    HasPending -->|Sí| NotifyCoordinator[Notificar a coordinador]
+    NotifyCoordinator --> AssignVisitor[Asignar visitador]
+    AssignVisitor --> ContactAdopter[Contactar adoptante]
+
+    ContactAdopter --> ContactResult{¿Adoptante responde?}
+
+    ContactResult -->|No| RetryContact[Programar reintento]
+    RetryContact --> RetryCount{¿Intentos < 3?}
+
+    RetryCount -->|Sí| ContactAdopter
+    RetryCount -->|No| FlagIssue[Marcar como problemático]
+    FlagIssue --> AlertCoordinator[Alertar a coordinador]
+    AlertCoordinator --> InvestigateCase[Investigar caso]
+
+    ContactResult -->|Sí| ScheduleVisit[Agendar visita domiciliaria]
+    ScheduleVisit --> ConfirmVisit[Confirmar fecha y hora]
+    ConfirmVisit --> PerformVisit[Realizar visita]
+
+    PerformVisit --> InspectAnimal[Inspeccionar estado del animal]
+    InspectAnimal --> CheckHealth[Verificar salud del animal]
+    CheckHealth --> CheckEnvironment[Evaluar condiciones del hogar]
+    CheckEnvironment --> InterviewAdopter[Entrevistar adoptante]
+
+    InterviewAdopter --> RecordObservations[Registrar observaciones]
+    RecordObservations --> TakePhotos[Tomar fotografías de respaldo]
+    TakePhotos --> EvaluateConditions[Evaluar condiciones generales]
+
+    EvaluateConditions --> ConditionsDecision{¿Condiciones adecuadas?}
+
+    ConditionsDecision -->|No| IdentifyIssues[Identificar problemas específicos]
+    IdentifyIssues --> IssueSeverity{Gravedad del problema}
+
+    IssueSeverity -->|Grave| InitiateRecovery[Iniciar proceso de recuperación]
+    InitiateRecovery --> NotifyAuthorities[Notificar a autoridades]
+    NotifyAuthorities --> RecoverAnimal[Recuperar animal]
+    RecoverAnimal --> UpdateAdoptionStatus[Estado: Adopción Revocada]
+
+    IssueSeverity -->|Moderado| GiveRecommendations[Emitir recomendaciones]
+    GiveRecommendations --> SetCorrectionDeadline[Establecer plazo de corrección]
+    SetCorrectionDeadline --> ScheduleFollowUp[Agendar seguimiento adicional]
+
+    IssueSeverity -->|Leve| ProvideGuidance[Brindar orientación]
+    ProvideGuidance --> ScheduleNextVisit
+
+    ConditionsDecision -->|Sí| RecordSuccess[Registrar seguimiento exitoso]
+    RecordSuccess --> ScheduleNextVisit{¿Requiere más seguimientos?}
+
+    ScheduleNextVisit -->|Sí| ProgramNext[Programar próxima visita]
+    ScheduleNextVisit -->|No| CompleteFollowUp[Completar plan de seguimiento]
+
+    ProgramNext --> SaveDB
+    CompleteFollowUp --> UpdateAdoptionFinal[Estado: Adopción Consolidada]
+    UpdateAdoptionFinal --> SaveDB
+    UpdateAdoptionStatus --> SaveDB
+    ScheduleFollowUp --> SaveDB
+    InvestigateCase --> SaveDB
+
+    SaveDB[(Guardar en Base de Datos)]
+    SaveDB --> AuditLog[Enviar evento a sci-audit]
+    AuditLog --> NotifyIndicators[Actualizar indicadores]
+    NotifyIndicators --> GenerateReport[Generar reporte de visita]
+    GenerateReport --> SendReportEmail[Enviar reporte por correo]
+    SendReportEmail --> End2([Fin: Seguimiento completado])
+
+    style Start fill:#90EE90
+    style End1 fill:#90EE90
+    style End2 fill:#90EE90
+    style HasPending fill:#FFD700
+    style ContactResult fill:#FFD700
+    style RetryCount fill:#FFD700
+    style ConditionsDecision fill:#FFD700
+    style IssueSeverity fill:#FFD700
+    style ScheduleNextVisit fill:#FFD700
+    style InitiateRecovery fill:#FF6B6B
+    style FlagIssue fill:#FFA500
+    style SaveDB fill:#87CEEB

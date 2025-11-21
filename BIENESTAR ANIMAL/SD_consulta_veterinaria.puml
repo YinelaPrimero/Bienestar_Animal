@@ -1,0 +1,104 @@
+@startuml
+!theme plain
+title Diagrama de Secuencia - Registro de Consulta Veterinaria
+
+actor "Veterinario" as VET
+participant "API\nVeterinaria" as API
+participant "Servicio\nVeterinario" as SV
+participant "sci-auth" as AUTH
+participant "Servicio\nInventario" as SI
+database "Base de Datos" as DB
+participant "sci-audit" as AUD
+participant "sci-indicators" as IND
+
+VET -> API: POST /api/consultas
+activate API
+API -> AUTH: Validar Token JWT y Permisos
+activate AUTH
+AUTH --> API: Token válido, rol: veterinario
+deactivate AUTH
+
+API -> SV: registrarConsulta(datos)
+activate SV
+
+SV -> DB: SELECT * FROM historial_clinico\nWHERE animal_id = ?
+activate DB
+DB --> SV: Historial clínico
+deactivate DB
+
+SV -> SA: validarDatosConsulta()
+SV -> DB: INSERT INTO consultas
+activate DB
+DB --> SV: Consulta creada
+deactivate DB
+
+alt Incluye tratamiento
+    SV -> DB: INSERT INTO tratamientos
+    activate DB
+    DB --> SV: Tratamiento creado
+    deactivate DB
+
+    alt Incluye medicamentos
+        SV -> SI: verificarStock(medicamentos)
+        activate SI
+        SI -> DB: SELECT stock\nFROM productos_farmaceuticos
+        activate DB
+        DB --> SI: Stock actual
+        deactivate DB
+
+        alt Stock insuficiente
+            SI --> SV: Error: Stock insuficiente
+            SV --> API: Error 409: Stock insuficiente
+            API --> VET: Alerta de inventario
+        else Stock suficiente
+            SI -> DB: UPDATE stock
+            activate DB
+            DB --> SI: Stock actualizado
+            deactivate DB
+
+            SI --> SV: Inventario actualizado
+            deactivate SI
+
+            SV -> DB: INSERT INTO medicamentos
+            activate DB
+            DB --> SV: Medicamentos registrados
+            deactivate DB
+        end
+    end
+
+    alt Incluye procedimientos
+        SV -> DB: INSERT INTO procedimientos
+        activate DB
+        DB --> SV: Procedimientos registrados
+        deactivate DB
+    end
+end
+
+alt Requiere seguimiento
+    SV -> DB: INSERT INTO citas
+    activate DB
+    DB --> SV: Próxima cita agendada
+    deactivate DB
+end
+
+SV -> DB: UPDATE historial_clinico\nSET updated_at = NOW()
+activate DB
+DB --> SV: Historial actualizado
+deactivate DB
+
+SV -> AUD: registrarEvento({\n  accion: "CREATE",\n  recurso: "consulta",\n  animal_id: ?,\n  detalles: {...}\n})
+activate AUD
+AUD --> SV: Evento registrado
+deactivate AUD
+
+SV -> IND: actualizarIndicador({\n  codigo: "consultas_veterinarias",\n  incremento: 1\n})
+activate IND
+IND --> SV: Indicador actualizado
+deactivate IND
+
+SV --> API: Consulta registrada exitosamente
+deactivate SV
+API --> VET: 201 Created\n{consulta, tratamiento}
+deactivate API
+
+@enduml

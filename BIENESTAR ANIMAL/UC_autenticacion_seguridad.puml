@@ -1,0 +1,100 @@
+@startuml
+!theme plain
+title Casos de Uso - Autenticación y Seguridad
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Usuario" as USR
+actor "Administrador" as ADMIN
+actor "sci-auth" as AUTH
+actor "Directorio Activo" as AD
+actor "sci-rbac" as RBAC
+actor "sci-audit" as AUDIT
+
+rectangle "Módulo de Autenticación y Seguridad" {
+  usecase "Iniciar Sesión" as UC1
+  usecase "Autenticar con AD" as UC2
+  usecase "Autenticar Local" as UC3
+  usecase "Validar Credenciales" as UC4
+  usecase "Verificar MFA" as UC5
+  usecase "Generar Código MFA" as UC6
+  usecase "Enviar Código\npor Email" as UC7
+  usecase "Validar Código MFA" as UC8
+  usecase "Generar Token JWT" as UC9
+  usecase "Cargar Permisos" as UC10
+  usecase "Crear Sesión" as UC11
+  usecase "Cerrar Sesión" as UC12
+
+  usecase "Cambiar Contraseña" as UC13
+  usecase "Recuperar Contraseña" as UC14
+  usecase "Enviar Link\nde Recuperación" as UC15
+  usecase "Validar Token\nde Recuperación" as UC16
+
+  usecase "Configurar MFA" as UC17
+  usecase "Activar MFA" as UC18
+  usecase "Desactivar MFA" as UC19
+  usecase "Generar Secret\nMFA" as UC20
+
+  usecase "Validar Acceso\na Módulo" as UC21
+  usecase "Verificar Permiso\nde Acción" as UC22
+  usecase "Denegar Acceso" as UC23
+  usecase "Registrar Intento\nFallido" as UC24
+
+  usecase "Bloquear Usuario\npor Intentos" as UC25
+  usecase "Desbloquear Usuario" as UC26
+
+  usecase "Auditar Inicio\nde Sesión" as UC27
+  usecase "Auditar Cierre\nde Sesión" as UC28
+  usecase "Auditar Cambio\nde Contraseña" as UC29
+  usecase "Auditar Acceso\nDenegado" as UC30
+}
+
+USR --> UC1
+UC1 ..> UC4 : <<include>>
+UC4 ..> UC2 : <<extend>>
+UC4 ..> UC3 : <<extend>>
+UC2 --> AD : valida
+UC3 --> AUTH : valida
+
+UC1 ..> UC5 : <<extend>>
+UC5 ..> UC6 : <<include>>
+UC5 ..> UC7 : <<include>>
+UC5 ..> UC8 : <<include>>
+
+UC1 ..> UC9 : <<include>>
+UC9 ..> UC10 : <<include>>
+UC10 --> RBAC : consulta
+UC1 ..> UC11 : <<include>>
+
+UC1 ..> UC27 : <<include>>
+UC27 --> AUDIT : registra
+
+USR --> UC12
+UC12 ..> UC28 : <<include>>
+UC28 --> AUDIT : registra
+
+USR --> UC13
+UC13 ..> UC29 : <<include>>
+UC29 --> AUDIT : registra
+
+USR --> UC14
+UC14 ..> UC15 : <<include>>
+UC14 ..> UC16 : <<include>>
+
+USR --> UC17
+UC17 ..> UC18 : <<extend>>
+UC17 ..> UC19 : <<extend>>
+UC18 ..> UC20 : <<include>>
+
+UC21 --> RBAC : valida
+UC21 ..> UC22 : <<include>>
+UC22 ..> UC23 : <<extend>>
+UC23 ..> UC24 : <<include>>
+UC24 --> AUDIT : registra
+UC24 ..> UC30 : <<include>>
+
+UC24 ..> UC25 : <<extend>>
+ADMIN --> UC26
+
+@enduml

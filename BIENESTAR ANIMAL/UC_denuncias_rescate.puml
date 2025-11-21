@@ -1,0 +1,91 @@
+@startuml
+!theme plain
+title Casos de Uso - Rescate y Atención de Denuncias
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Ciudadano" as CIU
+actor "Operador" as OP
+actor "Coordinador\nRescate" as COORD
+actor "Equipo de\nRescate" as RESCATE
+actor "Veterinario" as VET
+actor "Sistema SCI" as SCI
+
+rectangle "Módulo de Denuncias y Rescate" {
+  usecase "Reportar Denuncia" as UC1
+  usecase "Completar Formulario\nWeb" as UC2
+  usecase "Registrar Denuncia\nTelefónica" as UC3
+  usecase "Registrar Denuncia\nPresencial" as UC4
+  usecase "Capturar Ubicación\nExacta" as UC5
+  usecase "Clasificar Tipo\nde Denuncia" as UC6
+  usecase "Adjuntar Evidencias" as UC7
+  usecase "Registrar Datos\ndel Denunciante" as UC8
+  usecase "Crear Denuncia\nAnónima" as UC9
+  usecase "Generar Número\nde Ticket" as UC10
+  usecase "Evaluar Prioridad\nde Denuncia" as UC11
+  usecase "Asignar Responsable\nde Rescate" as UC12
+  usecase "Notificar Equipo\nde Rescate" as UC13
+  usecase "Consultar Denuncia\npor Ticket" as UC14
+  usecase "Actualizar Estado\nde Denuncia" as UC15
+  usecase "Planificar Operativo\nde Rescate" as UC16
+  usecase "Ejecutar Rescate" as UC17
+  usecase "Registrar Rescate\nExitoso" as UC18
+  usecase "Registrar Rescate\nFallido" as UC19
+  usecase "Solicitar Apoyo\nde Autoridades" as UC20
+  usecase "Realizar Primera\nAtención Veterinaria" as UC21
+  usecase "Registrar Animal\nRescatado" as UC22
+  usecase "Cerrar Denuncia" as UC23
+  usecase "Notificar Resolución\nal Denunciante" as UC24
+  usecase "Generar Reporte\nde Rescate" as UC25
+  usecase "Consultar Denuncias\npor Estado" as UC26
+  usecase "Consultar Denuncias\npor Ubicación" as UC27
+}
+
+CIU --> UC1
+UC1 ..> UC2 : <<extend>>
+UC1 ..> UC3 : <<extend>>
+OP --> UC3
+OP --> UC4
+UC4 ..> UC1 : <<extend>>
+
+UC1 ..> UC5 : <<include>>
+UC1 ..> UC6 : <<include>>
+UC1 ..> UC7 : <<extend>>
+UC1 ..> UC8 : <<extend>>
+UC1 ..> UC9 : <<extend>>
+UC1 ..> UC10 : <<include>>
+UC1 ..> UC11 : <<include>>
+UC10 --> SCI : genera
+
+COORD --> UC12
+UC12 ..> UC13 : <<include>>
+UC13 --> SCI : notifica
+
+CIU --> UC14
+OP --> UC14
+
+OP --> UC15
+COORD --> UC15
+
+RESCATE --> UC16
+RESCATE --> UC17
+UC17 ..> UC18 : <<extend>>
+UC17 ..> UC19 : <<extend>>
+UC18 ..> UC22 : <<include>>
+UC18 ..> UC21 : <<include>>
+UC21 --> VET : deriva
+UC19 ..> UC20 : <<extend>>
+
+COORD --> UC23
+UC23 ..> UC24 : <<extend>>
+
+RESCATE --> UC25
+COORD --> UC25
+
+OP --> UC26
+COORD --> UC26
+
+COORD --> UC27
+
+@enduml

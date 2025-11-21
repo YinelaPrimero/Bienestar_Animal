@@ -1,0 +1,87 @@
+@startuml
+!theme plain
+title Casos de Uso - Interoperabilidad con SCI
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Sistema de\nBienestar Animal" as SBA
+actor "sci-gateway" as GW
+actor "sci-auth" as AUTH
+actor "sci-rbac" as RBAC
+actor "sci-audit" as AUDIT
+actor "sci-indicators" as IND
+
+rectangle "Componentes de Interoperabilidad" {
+  usecase "Autenticar Usuario" as UC1
+  usecase "Validar Token JWT" as UC2
+  usecase "Renovar Token" as UC3
+  usecase "Cerrar Sesión" as UC4
+
+  usecase "Verificar Permisos" as UC5
+  usecase "Consultar Roles\ndel Usuario" as UC6
+  usecase "Validar Acceso\na Recurso" as UC7
+
+  usecase "Enrutar Solicitud\nAPI" as UC8
+  usecase "Aplicar Rate\nLimiting" as UC9
+  usecase "Balancear Carga" as UC10
+  usecase "Registrar Métricas\nde API" as UC11
+
+  usecase "Registrar Evento\nde Auditoría" as UC12
+  usecase "Consultar Log\nde Auditoría" as UC13
+  usecase "Generar Trace ID" as UC14
+  usecase "Rastrear Transacción" as UC15
+
+  usecase "Actualizar Indicador" as UC16
+  usecase "Consultar Indicador" as UC17
+  usecase "Calcular KPI" as UC18
+  usecase "Generar Serie\nTemporal" as UC19
+
+  usecase "Enviar Notificación" as UC20
+  usecase "Generar Alerta" as UC21
+  usecase "Programar Tarea" as UC22
+}
+
+SBA --> UC1
+UC1 --> AUTH : solicita
+AUTH --> UC2 : ejecuta
+SBA --> UC3
+UC3 --> AUTH : solicita
+SBA --> UC4
+UC4 --> AUTH : solicita
+
+SBA --> UC8
+UC8 --> GW : procesa
+UC8 ..> UC9 : <<include>>
+UC8 ..> UC10 : <<extend>>
+UC8 ..> UC11 : <<include>>
+
+UC8 ..> UC2 : <<include>>
+UC2 --> AUTH : valida
+
+UC8 ..> UC5 : <<include>>
+UC5 --> RBAC : consulta
+UC5 ..> UC6 : <<include>>
+UC5 ..> UC7 : <<include>>
+
+SBA --> UC12
+UC12 --> AUDIT : registra
+UC12 ..> UC14 : <<include>>
+
+SBA --> UC13
+UC13 --> AUDIT : consulta
+UC13 ..> UC15 : <<extend>>
+
+SBA --> UC16
+UC16 --> IND : actualiza
+UC16 ..> UC18 : <<include>>
+
+SBA --> UC17
+UC17 --> IND : consulta
+UC17 ..> UC19 : <<extend>>
+
+SBA --> UC20
+SBA --> UC21
+SBA --> UC22
+
+@enduml
