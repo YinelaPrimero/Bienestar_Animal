@@ -1,9 +1,9 @@
-<!-- AnimalDetail.vue -->
+<!-- AnimalDetail.vue - Con colores Gov.co oficiales -->
 <template>
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h3 class="h4-tipografia-govco">Detalles del animal</h3>
+      <div class="modal-header govco-bg-blue-light">
+        <h3 class="h4-tipografia-govco govcolor-blue-dark">Detalles del animal</h3>
         <button @click="$emit('close')" class="modal-close">×</button>
       </div>
 
@@ -13,8 +13,8 @@
             <img :src="animal.photoUrl || '/placeholder-animal.jpg'" :alt="`Foto de ${animal.microchip}`" />
           </div>
 
-          <div class="detail-section">
-            <h4 class="h6-tipografia-govco section-subtitle">Identificación</h4>
+          <div class="detail-section govco-bg-hawkes-blue">
+            <h4 class="h6-tipografia-govco section-subtitle govcolor-marine">Identificación</h4>
             <dl class="detail-list">
               <dt>Microchip:</dt>
               <dd>{{ animal.microchip }}</dd>
@@ -31,8 +31,8 @@
             </dl>
           </div>
 
-          <div class="detail-section">
-            <h4 class="h6-tipografia-govco section-subtitle">Rescate</h4>
+          <div class="detail-section govco-bg-hawkes-blue">
+            <h4 class="h6-tipografia-govco section-subtitle govcolor-marine">Rescate</h4>
             <dl class="detail-list">
               <dt>Estado actual:</dt>
               <dd>
@@ -49,22 +49,22 @@
             </dl>
           </div>
 
-          <div v-if="animal.neutered" class="detail-section full-width">
-            <h4 class="h6-tipografia-govco section-subtitle">Esterilización</h4>
+          <div v-if="animal.neutered" class="detail-section govco-bg-hawkes-blue full-width">
+            <h4 class="h6-tipografia-govco section-subtitle govcolor-elf-green">Esterilización ✓</h4>
             <dl class="detail-list">
               <dt>Fecha:</dt>
               <dd>{{ animal.neuteringDate }}</dd>
               <dt>Veterinario:</dt>
               <dd>{{ animal.neuteringVet }}</dd>
               <dt>Certificado:</dt>
-              <dd><a href="#" class="certificate-link">Ver certificado digital</a></dd>
+              <dd><a href="#" class="certificate-link govcolor-marine">Ver certificado digital</a></dd>
             </dl>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button @click="$emit('close')" class="govco-btn govco-bg-concrete">Cerrar</button>
+        <button @click="$emit('close')" class="govco-btn govco-bg-dim-gray">Cerrar</button>
         <button class="govco-btn govco-bg-elf-green">Editar información</button>
       </div>
     </div>
@@ -124,13 +124,11 @@ function formatCoordinates(coords) {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 2px solid #E0E0E0;
-  background: #E8F0FE;
+  border-bottom: 2px solid #3366cc; /* govcolor-marine */
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #3366CC;
 }
 
 .modal-close {
@@ -138,7 +136,7 @@ function formatCoordinates(coords) {
   border: none;
   font-size: 2rem;
   cursor: pointer;
-  color: #666;
+  color: #737373; /* govcolor-dim-gray */
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -147,6 +145,7 @@ function formatCoordinates(coords) {
 
 .modal-close:hover {
   background: rgba(0,0,0,0.1);
+  color: #4B4B4B; /* govcolor-tundora */
 }
 
 .modal-body {
@@ -165,7 +164,8 @@ function formatCoordinates(coords) {
   height: 300px;
   border-radius: 8px;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3366cc 0%, #004884 100%);
+  /* govco-bg-marine to govco-bg-blue-dark */
 }
 
 .detail-image img {
@@ -175,9 +175,9 @@ function formatCoordinates(coords) {
 }
 
 .detail-section {
-  background: #f5f7fb;
   padding: 1.5rem;
   border-radius: 8px;
+  border: 1px solid #c9e2ff; /* govco-bg-blue-light */
 }
 
 .full-width {
@@ -186,7 +186,6 @@ function formatCoordinates(coords) {
 
 .section-subtitle {
   margin: 0 0 1rem 0;
-  color: #3366CC;
   font-weight: 600;
 }
 
@@ -196,13 +195,13 @@ function formatCoordinates(coords) {
 
 .detail-list dt {
   font-weight: 600;
-  color: #333;
+  color: #4B4B4B; /* govcolor-tundora */
   margin-top: 0.75rem;
 }
 
 .detail-list dd {
   margin: 0.25rem 0 0 0;
-  color: #666;
+  color: #737373; /* govcolor-dim-gray */
 }
 
 .status-badge {
@@ -214,24 +213,24 @@ function formatCoordinates(coords) {
   color: white;
 }
 
+/* Colores Gov.co para estados */
 .status-en_calle {
-  background-color: #f44336;
+  background-color: #A80521; /* govco-bg-shiraz - Rojo para urgencia */
 }
 
 .status-refugio {
-  background-color: #2196F3;
+  background-color: #FFAB00; /* govco-bg-gold - Amarillo para en proceso */
 }
 
 .status-adoptado {
-  background-color: #4CAF50;
+  background-color: #068460; /* govco-bg-elf-green - Verde para éxito */
 }
 
 .status-fallecido {
-  background-color: #666;
+  background-color: #4B4B4B; /* govco-bg-tundora - Gris oscuro */
 }
 
 .certificate-link {
-  color: #3366CC;
   text-decoration: none;
   font-weight: 600;
 }
@@ -245,7 +244,7 @@ function formatCoordinates(coords) {
   justify-content: flex-end;
   gap: 1rem;
   padding: 1.5rem;
-  border-top: 2px solid #E0E0E0;
+  border-top: 2px solid #c9e2ff; /* govco-bg-blue-light */
 }
 
 .govco-btn {
@@ -263,12 +262,41 @@ function formatCoordinates(coords) {
   opacity: 0.9;
 }
 
-.govco-bg-concrete {
+.govco-bg-dim-gray {
   background-color: #737373;
 }
 
 .govco-bg-elf-green {
-  background-color: #069169;
+  background-color: #068460;
+}
+
+/* Clases de color Gov.co */
+.govco-bg-blue-light {
+  background-color: #c9e2ff;
+}
+
+.govco-bg-hawkes-blue {
+  background-color: #F6F8F9;
+}
+
+.govcolor-marine {
+  color: #3366cc;
+}
+
+.govcolor-blue-dark {
+  color: #004884;
+}
+
+.govcolor-elf-green {
+  color: #068460;
+}
+
+.govcolor-dim-gray {
+  color: #737373;
+}
+
+.govcolor-tundora {
+  color: #4B4B4B;
 }
 
 @media (max-width: 992px) {

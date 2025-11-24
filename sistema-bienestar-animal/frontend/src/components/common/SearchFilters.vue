@@ -1,4 +1,4 @@
-<!-- SearchFilters.vue - COMPONENTE NUEVO -->
+<!-- SearchFilters.vue - COMPONENTE CORREGIDO -->
 <template>
   <div class="form-section">
     <h3 class="h5-tipografia-govco section-title">Criterios de búsqueda</h3>
@@ -11,8 +11,8 @@
 
       <div class="input-like-govco">
         <label for="searchSpecies" class="label-desplegable-govco">Especie</label>
-        <div class="desplegable-govco" data-type="basic">
-          <select id="searchSpecies" v-model="localFilters.species">
+        <div class="desplegable-govco" data-type="basic" id="species-search-dropdown">
+          <select id="searchSpecies" v-model="localFilters.species" @change="onDropdownChange">
             <option value="">Todas</option>
             <option value="perro">Perro</option>
             <option value="gato">Gato</option>
@@ -33,8 +33,8 @@
 
       <div class="input-like-govco">
         <label for="searchSex" class="label-desplegable-govco">Sexo</label>
-        <div class="desplegable-govco" data-type="basic">
-          <select id="searchSex" v-model="localFilters.sex">
+        <div class="desplegable-govco" data-type="basic" id="sex-search-dropdown">
+          <select id="searchSex" v-model="localFilters.sex" @change="onDropdownChange">
             <option value="">Todos</option>
             <option value="macho">Macho</option>
             <option value="hembra">Hembra</option>
@@ -45,8 +45,8 @@
 
       <div class="input-like-govco">
         <label for="searchStatus" class="label-desplegable-govco">Estado actual</label>
-        <div class="desplegable-govco" data-type="basic">
-          <select id="searchStatus" v-model="localFilters.status">
+        <div class="desplegable-govco" data-type="basic" id="status-search-dropdown">
+          <select id="searchStatus" v-model="localFilters.status" @change="onDropdownChange">
             <option value="">Todos</option>
             <option value="en_calle">En calle</option>
             <option value="refugio">En refugio</option>
@@ -63,22 +63,40 @@
       </div>
 
       <div class="input-like-govco">
-        <div class="date-field-container">
+        <div class="date-field-container neut-date-container">
           <label for="searchDateFrom" class="label-desplegable-govco">Fecha rescate desde</label>
           <div class="desplegable-govco desplegable-calendar-govco" data-type="calendar">
             <div class="date desplegable-selected-option">
-              <input class="browser-default" type="text" id="searchDateFrom" v-model="localFilters.dateFrom" placeholder="DD/MM/AAAA" />
+              <input 
+                class="browser-default" 
+                type="text" 
+                id="searchDateFrom" 
+                v-model="localFilters.dateFrom" 
+                @change="onDateChange"
+                @blur="onDateChange"
+                aria-autocomplete="off" 
+                days="true" 
+                placeholder="DD/MM/AAAA" 
+              />
             </div>
           </div>
         </div>
       </div>
 
       <div class="input-like-govco">
-        <div class="date-field-container">
+        <div class="date-field-container neut-date-container">
           <label for="searchDateTo" class="label-desplegable-govco">Fecha rescate hasta</label>
           <div class="desplegable-govco desplegable-calendar-govco" data-type="calendar">
             <div class="date desplegable-selected-option">
-              <input class="browser-default" type="text" id="searchDateTo" v-model="localFilters.dateTo" placeholder="DD/MM/AAAA" />
+              <input 
+                class="browser-default" 
+                type="text" 
+                id="searchDateTo" 
+                v-model="localFilters.dateTo" 
+                @change="onDateChange"
+                @blur="onDateChange"
+                placeholder="DD/MM/AAAA" 
+              />
             </div>
           </div>
         </div>
@@ -92,13 +110,13 @@
 
     <div class="form-actions">
       <button type="button" @click="$emit('clear')" class="govco-btn govco-bg-concrete">Limpiar filtros</button>
-      <button type="button" @click="$emit('search')" class="govco-btn govco-bg-elf-green">Buscar</button>
+      <button type="button" @click="handleSearch" class="govco-btn govco-bg-elf-green">Buscar</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, nextTick } from 'vue';
 
 const props = defineProps({
   modelValue: Object
@@ -112,12 +130,147 @@ const localFilters = computed({
 });
 
 onMounted(() => {
-  if (typeof window !== 'undefined' && window.GOVCo) {
+  initializeGovcoComponents();
+  setupDropdownListeners();
+});
+
+function initializeGovcoComponents() {
+  if (typeof window === 'undefined' || !window.GOVCo) return;
+  
+  nextTick(() => {
+    // Inicializar dropdowns básicos
+    const dropdowns = document.querySelectorAll('.desplegable-govco[data-type="basic"]');
+    dropdowns.forEach(dropdown => {
+      if (window.GOVCo?.init) {
+        window.GOVCo.init(dropdown.parentElement);
+      }
+    });
+
+    // Inicializar calendarios
+    const calendars = document.querySelectorAll('[data-type="calendar"]');
+    calendars.forEach(cal => {
+      if (window.GOVCo?.init) {
+        window.GOVCo.init(cal.parentElement);
+      }
+    });
+    
+    // Sincronizar valores después de inicializar
     setTimeout(() => {
-      const calendars = document.querySelectorAll('[data-type="calendar"]');
-      calendars.forEach(cal => window.GOVCo?.init(cal.parentElement));
-    }, 100);
-  }
+      syncDropdownValues();
+    }, 200);
+  });
+}
+
+function setupDropdownListeners() {
+  // Escuchar cambios en los selects nativos
+  const selects = ['searchSpecies', 'searchSex', 'searchStatus'];
+  
+  selects.forEach(id => {
+    const select = document.getElementById(id);
+    if (select) {
+      select.addEventListener('change', (e) => {
+        const field = id.replace('search', '').toLowerCase();
+        const fieldMap = {
+          'species': 'species',
+          'sex': 'sex',
+          'status': 'status'
+        };
+        
+        if (fieldMap[field]) {
+          localFilters.value[fieldMap[field]] = e.target.value;
+        }
+      });
+    }
+  });
+  
+  // Escuchar cambios en los inputs de fecha
+  const dateInputs = ['searchDateFrom', 'searchDateTo'];
+  dateInputs.forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      // Escuchar múltiples eventos para capturar cambios del calendario GOV.CO
+      ['change', 'blur', 'input'].forEach(eventType => {
+        input.addEventListener(eventType, (e) => {
+          syncDateValues();
+        });
+      });
+    }
+  });
+  
+  // También escuchar eventos personalizados de GOV.CO si existen
+  document.addEventListener('govco:dropdown:change', (e) => {
+    syncDropdownValues();
+  });
+  
+  // Escuchar eventos del calendario GOV.CO
+  document.addEventListener('govco:calendar:change', (e) => {
+    syncDateValues();
+  });
+}
+
+function syncDateValues() {
+  // Sincronizar valores de las fechas con el modelo
+  const dateFrom = document.getElementById('searchDateFrom');
+  const dateTo = document.getElementById('searchDateTo');
+  
+  if (dateFrom) localFilters.value.dateFrom = dateFrom.value;
+  if (dateTo) localFilters.value.dateTo = dateTo.value;
+  
+  console.log('Fechas sincronizadas:', {
+    dateFrom: localFilters.value.dateFrom,
+    dateTo: localFilters.value.dateTo
+  });
+}
+
+function syncDropdownValues() {
+  // Sincronizar valores de los dropdowns con el modelo
+  const species = document.getElementById('searchSpecies');
+  const sex = document.getElementById('searchSex');
+  const status = document.getElementById('searchStatus');
+  
+  if (species) localFilters.value.species = species.value;
+  if (sex) localFilters.value.sex = sex.value;
+  if (status) localFilters.value.status = status.value;
+}
+
+function onDropdownChange(e) {
+  // Asegurar que el cambio se refleje inmediatamente
+  console.log('Dropdown changed:', e.target.id, e.target.value);
+  syncDropdownValues();
+}
+
+function onDateChange(e) {
+  // Asegurar que el cambio de fecha se refleje inmediatamente
+  console.log('Date changed:', e.target.id, e.target.value);
+  syncDateValues();
+}
+
+// Antes de buscar, asegurar que los valores estén sincronizados
+function handleSearch() {
+  syncDropdownValues();
+  syncDateValues();
+  
+  // Log para debug
+  console.log('Valores al buscar:', {
+    species: localFilters.value.species,
+    sex: localFilters.value.sex,
+    status: localFilters.value.status,
+    microchip: localFilters.value.microchip,
+    breed: localFilters.value.breed,
+    color: localFilters.value.color,
+    location: localFilters.value.location,
+    dateFrom: localFilters.value.dateFrom,
+    dateTo: localFilters.value.dateTo,
+    onlyNeutered: localFilters.value.onlyNeutered
+  });
+  
+  emit('search');
+}
+
+// Exponer las funciones para que puedan ser llamadas externamente si es necesario
+defineExpose({
+  syncDropdownValues,
+  syncDateValues
 });
 </script>
 
@@ -158,6 +311,19 @@ onMounted(() => {
   font-size: 1rem;
   height: 44px;
   box-sizing: border-box;
+}
+
+.input-like-govco {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 18px 0  ;
+}
+
+.input-like-govco label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
 }
 
 .info-entradas-de-texto-govco {
@@ -213,12 +379,70 @@ onMounted(() => {
   background-color: #069169;
 }
 
-.input-like-govco {
-  padding: 1rem 0;
+.desplegable-govco {
+  position: relative;
+  width: 100%;
 }
 
-.date-field-container {
+.desplegable-govco select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px 8px;
+  padding-right: 2.5rem;
+}
+
+:deep(.desplegable-govco .desplegable-items),
+:deep(.desplegable-govco.desplegable-calendar-govco .desplegable-calendar-control) { 
+  z-index: 1500 !important;
+}
+
+:deep(.desplegable-govco.desplegable-calendar-govco .desplegable-calendar-control) {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 668.8px !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+}
+
+:deep(.desplegable-calendar-govco .desplegable-calendar-control .header) { 
+  width: 100% !important; 
+  box-sizing: border-box !important;
+}
+
+:deep(.desplegable-calendar-govco .desplegable-calendar-control table#miCalendarioGrid.dates) {
+  width: 100% !important;
+  table-layout: fixed !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;  
+  margin-left: -4.8px !important;
+}
+
+:deep(.desplegable-calendar-govco .desplegable-calendar-control table td) { 
+  box-sizing: border-box !important; 
+  width: calc(100% / 7) !important;
+}
+
+.date-field-container {  
   width: 100%;
+}
+
+.date-field-container :deep(.date.desplegable-selected-option) {
+  padding: 7px 40px 7px 16px !important; 
+  box-sizing: border-box !important;
+}
+
+.date-field-container :deep(.date.desplegable-selected-option input) {
+  width: 100% !important;
+  padding-right: 30px !important;
+  box-sizing: border-box !important;
+}
+
+.neut-date-container .desplegable-govco {
+  margin-top: 0.7rem; 
 }
 
 @media (max-width: 992px) {

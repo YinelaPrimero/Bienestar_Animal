@@ -24,7 +24,7 @@
 
           <!-- Fecha de esterilización -->
           <div class="input-like-govco">
-            <div class="date-field-container">
+            <div class="date-field-container neut-date-container">
               <label for="neutDate" class="label-desplegable-govco">
                 Fecha de esterilización<span aria-required="true">*</span>
               </label>
@@ -482,23 +482,28 @@ function onSubmit() {
 .govco-bg-elf-green {
   background-color: #069169;
 }
+.neut-date-container .desplegable-govco{margin-top: 0.7rem;}
 
-.input-like-govco { 
-  padding: 1rem 0; 
-}
-
-.date-field-container { 
+.input-like-govco {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  margin: 18px 0  ;
 }
 
-.date-field-container :deep(.date.desplegable-selected-option) {
-  padding: 7px 40px 7px 16px !important; 
-  box-sizing: border-box !important;
+.input-like-govco label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
 }
+
+:deep(.desplegable-calendar-govco .desplegable-calendar-control table td) { box-sizing: border-box !important; width: calc(100% / 7) !important;}
+.date-field-container {  width: 100%;}
+.date-field-container :deep(.date.desplegable-selected-option) {padding: 7px 40px 7px 16px !important; box-sizing: border-box !important;}
 
 .date-field-container :deep(.date.desplegable-selected-option input) {
   width: 100% !important;
-  padding-right: 30px !important;
+  padding-right: 30px !important; /* Espacio para el ícono */
   box-sizing: border-box !important;
 }
 

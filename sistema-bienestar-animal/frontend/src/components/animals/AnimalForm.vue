@@ -272,7 +272,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted } from 'vue';
+import { reactive, ref, computed, onMounted, nextTick } from 'vue';
 import MapSelector from '../common/MapSelector.vue';
 
 
@@ -439,10 +439,110 @@ if (typeof window !== 'undefined') {
   });
 }
 
+function initializeGovcoComponents() {
+  if (typeof window === 'undefined' || !window.GOVCo) return;
+  
+  nextTick(() => {
+    // Inicializar dropdowns básicos
+    const dropdowns = document.querySelectorAll('.desplegable-govco[data-type="basic"]');
+    dropdowns.forEach(dropdown => {
+      if (window.GOVCo?.init) {
+        window.GOVCo.init(dropdown.parentElement);
+      }
+    });
+
+    // Inicializar calendarios
+    const calendars = document.querySelectorAll('[data-type="calendar"]');
+    calendars.forEach(cal => {
+      if (window.GOVCo?.init) {
+        window.GOVCo.init(cal.parentElement);
+      }
+    });
+    
+    // Sincronizar valores después de inicializar
+    setTimeout(() => {
+      syncDropdownValues();
+      syncDateValues();
+    }, 200);
+  });
+}
+
+function setupDropdownListeners() {
+  // Escuchar cambios en los selects nativos
+  const selects = ['species', 'sex', 'status'];
+  
+  selects.forEach(id => {
+    const select = document.getElementById(id);
+    if (select) {
+      select.addEventListener('change', (e) => {
+        form[id] = e.target.value;
+        console.log(`${id} changed to:`, e.target.value);
+      });
+    }
+  });
+  
+  // Escuchar cambios en los inputs de fecha
+  const dateInput = document.getElementById('rescueDate');
+  if (dateInput) {
+    ['change', 'blur', 'input'].forEach(eventType => {
+      dateInput.addEventListener(eventType, (e) => {
+        syncDateValues();
+      });
+    });
+  }
+  
+  // También escuchar eventos personalizados de GOV.CO si existen
+  document.addEventListener('govco:dropdown:change', (e) => {
+    syncDropdownValues();
+  });
+  
+  // Escuchar eventos del calendario GOV.CO
+  document.addEventListener('govco:calendar:change', (e) => {
+    syncDateValues();
+  });
+}
+
+function syncDropdownValues() {
+  // Sincronizar valores de los dropdowns con el modelo
+  const species = document.getElementById('species');
+  const sex = document.getElementById('sex');
+  const status = document.getElementById('status');
+  
+  if (species) form.species = species.value;
+  if (sex) form.sex = sex.value;
+  if (status) form.status = status.value;
+  
+  console.log('Dropdowns sincronizados:', {
+    species: form.species,
+    sex: form.sex,
+    status: form.status
+  });
+}
+
+function syncDateValues() {
+  // Sincronizar valores de las fechas con el modelo
+  const rescueDate = document.getElementById('rescueDate');
+  
+  if (rescueDate) {
+    form.rescueDate = rescueDate.value;
+    console.log('Fecha sincronizada:', form.rescueDate);
+  }
+}
+
+function configurePhotosInput() {
+  const photosInput = document.getElementById('photos');
+  if (photosInput) {
+    photosInput.disabled = false;
+    photosInput.classList.remove('disabled');
+    photosInput.classList.add('active');
+  }
+}
+
 onMounted(() => {
   fixNonSubmitButtons();
   preventScrollOnInteractions();
-  initializeCalendars();
+  initializeGovcoComponents();
+  setupDropdownListeners();
 
   // Configurar validación del componente de carga de archivos
   if (window.setValidationParameters) {
@@ -467,7 +567,8 @@ onMounted(() => {
     window.addEventListener('load', () => {
       fixNonSubmitButtons();
       preventScrollOnInteractions();
-      initializeCalendars();
+      initializeGovcoComponents();
+      setupDropdownListeners();
       
       configurePhotosInput();
       
@@ -484,26 +585,6 @@ onMounted(() => {
     });
   }
 });
-
-function initializeCalendars() {
-  if (typeof window !== 'undefined' && window.GOVCo) {
-    try {
-      // Reinicializar todos los componentes GOV.CO en el formulario
-      const calendars = formEl.value?.querySelectorAll('[data-type="calendar"]');
-      if (calendars) {
-        calendars.forEach((cal) => {
-          // Forzar reinicialización de GOV.CO
-          if (window.GOVCo.init) {
-            window.GOVCo.init(cal.parentElement);
-          }
-        });
-      }
-    } catch (error) {
-      console.warn('Error inicializando calendarios:', error);
-    }
-  }
-}
-
 
 const photosLabel = computed(() => 
   !form.photos.length ? 'Sin archivos seleccionados' : 
@@ -555,6 +636,24 @@ function resetForm() {
 }
 
 function onSubmit() {
+  // Sincronizar valores antes de validar
+  syncDropdownValues();
+  syncDateValues();
+  
+  console.log('Valores del formulario al enviar:', {
+    microchip: form.microchip,
+    species: form.species,
+    breed: form.breed,
+    color: form.color,
+    sex: form.sex,
+    estimatedAge: form.estimatedAge,
+    status: form.status,
+    rescueDate: form.rescueDate,
+    coordinates: form.coordinates,
+    healthCondition: form.healthCondition,
+    photos: form.photos.length
+  });
+  
   if (!validate()) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
@@ -606,6 +705,8 @@ function onSubmit() {
 .map-coords { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); background: white; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; padding: 1.5rem; border-top: 2px solid #E0E0E0; }
 .govco-bg-concrete {  background-color: #737373;}
+.govco-bg-elf-green { background-color: #069169; }
+.info-entradas-de-texto-govco { display: block; color: #666; font-size: 0.85rem; margin-top: 0.25rem; }
 :deep(.desplegable-govco .desplegable-items),
 :deep(.desplegable-govco.desplegable-calendar-govco .desplegable-calendar-control) { z-index: 1500 !important;}
 
@@ -626,7 +727,7 @@ function onSubmit() {
   box-sizing: border-box !important;
   padding: 0 !important;
   margin: 0 !important;  
-  margin-left: -4.8 px  !important;
+  margin-left: -4.8px !important;
 }
 
 :deep(.desplegable-calendar-govco .desplegable-calendar-control table td) { box-sizing: border-box !important; width: calc(100% / 7) !important;}
@@ -635,12 +736,38 @@ function onSubmit() {
 
 .date-field-container :deep(.date.desplegable-selected-option input) {
   width: 100% !important;
-  padding-right: 30px !important; /* Espacio para el ícono */
+  padding-right: 30px !important;
   box-sizing: border-box !important;
 }
 
-.input-like-govco { padding: 1rem 0; }
+.input-like-govco {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 18px 0;
+}
+
+.input-like-govco label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
 .neut-date-container .desplegable-govco {margin-top: 0.7rem; }
+
+.desplegable-govco {
+  position: relative;
+  width: 100%;
+}
+
+.desplegable-govco select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px 8px;
+  padding-right: 2.5rem;
+}
+
 .container-carga-de-archivo-govco :deep(.attached-files-carga-de-archivo-govco) > *:not(.photo-item):not(.attached-file-carga-de-archivo-govco) { display: none !important;}
 .container-detail-carga-de-archivo-govco {display: block !important;}
 .container-carga-de-archivo-govco :deep(.attached-files-carga-de-archivo-govco) {padding-top: 0.8rem;}
@@ -658,4 +785,4 @@ function onSubmit() {
   .form-actions { flex-direction: column; }
   .govco-btn { width: 100%; }
 }
-</style>
+</style>style scoped>
