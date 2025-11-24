@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Animal extends Model
 {
-    use HasFactory, HasUuid, SoftDeletes, HasAuditoria;
+    use HasFactory, HasUuid, SoftDeletes; // HasAuditoria;  ⚠️ Comentado temporalmente - falta migrar tabla eventos_auditoria
 
     protected $table = 'animals';
     protected $keyType = 'string';

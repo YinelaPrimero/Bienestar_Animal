@@ -12,6 +12,14 @@ class UsuarioSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        \App\Models\User\Usuario::create([
+            'username' => 'admin',
+            'nombres' => 'Admin',
+            'apellidos' => 'Sistema',
+            'email' => 'admin@sistema.com',
+            'password_hash' => bcrypt('password'),  // Contraseña por defecto
+            'activo' => true,
+            'origen_autenticacion' => 'local',
+        ]);
     }
 }

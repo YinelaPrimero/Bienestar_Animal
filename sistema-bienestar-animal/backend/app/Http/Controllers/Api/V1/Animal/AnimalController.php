@@ -90,7 +90,7 @@ class AnimalController extends BaseController
             // Crear animal
             $animal = Animal::create(array_merge(
                 $request->all(),
-                ['created_by' => auth()->id() ?? 1]  // ⚠️ Usar 1 por defecto si no hay autenticación
+                ['created_by' => auth()->id()]  // Usar null si no hay autenticación
             ));
 
             // Crear historial clínico automáticamente
