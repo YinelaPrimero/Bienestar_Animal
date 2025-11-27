@@ -17,8 +17,8 @@
             <label for="animal" class="label-desplegable-govco">
               Animal<span aria-required="true">*</span>
             </label>
-            <div class="desplegable-govco" data-type="basic">
-              <select id="animal" v-model="form.animalId">
+            <div class="desplegable-govco" data-type="basic" id="animal-dropdown">
+              <select id="animal" v-model="form.animalId" aria-invalid="false">
                 <option disabled value="">Seleccionar animal</option>
                 <option v-for="animal in animals" :key="animal.id" :value="animal.id">
                   {{ animal.name }} - {{ animal.microchip }}
@@ -58,8 +58,8 @@
             <label for="consultType" class="label-desplegable-govco" >
               Tipo de consulta<span aria-required="true">*</span>
             </label>
-            <div class="desplegable-govco" data-type="basic" id="consultType-search-dropdown">
-              <select id="consultType" v-model="form.consultType" @change="onDropdownChange">
+            <div class="desplegable-govco" data-type="basic" id="consultType-dropdown">
+              <select id="consultType" v-model="form.consultType" aria-invalid="false">
                 <option disabled value="">Escoger</option>
                 <option value="primera_vez">Primera vez</option>
                 <option value="control">Control</option>
@@ -125,8 +125,8 @@
             <label for="prognosis" class="label-desplegable-govco">
               Pronóstico
             </label>
-            <div class="desplegable-govco" data-type="basic" id="prognosis-search-dropdown">
-              <select id="prognosis" v-model="form.prognosis" @change="onDropdownChange">
+            <div class="desplegable-govco" data-type="basic" id="prognosis-dropdown">
+              <select id="prognosis" v-model="form.prognosis" aria-invalid="false">
                 <option value="">No especificado</option>
                 <option value="excelente">Excelente</option>
                 <option value="bueno">Bueno</option>
@@ -226,7 +226,6 @@
             </div>
           </div>
 
-
           <!-- Notas de seguimiento -->
           <div v-if="form.requiresFollowup" class="entradas-de-texto-govco full-width">
             <label for="followupNotes">Notas para el control</label>
@@ -249,8 +248,8 @@
             <label for="veterinarian" class="label-desplegable-govco">
               Veterinario responsable<span aria-required="true">*</span>
             </label>
-            <div class="desplegable-govco" data-type="basic">
-              <select id="veterinarian" v-model="form.veterinarianId">
+            <div class="desplegable-govco" data-type="basic" id="veterinarian-dropdown">
+              <select id="veterinarian" v-model="form.veterinarianId" aria-invalid="false">
                 <option disabled value="">Seleccionar veterinario</option>
                 <option v-for="vet in veterinarians" :key="vet.id" :value="vet.id">
                   {{ vet.name }} - Tarjeta Prof. {{ vet.license }}
@@ -288,7 +287,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, nextTick } from 'vue';
 import VitalSignsInput from './VitalSignsInput.vue';
 import MedicationPrescription from './MedicationPrescription.vue';
 import FileUploader from '../common/FileUploader.vue';
@@ -350,7 +349,178 @@ const errors = reactive({
   veterinarianId: ''
 });
 
+// Función para asegurar que los botones tengan el type correcto
+function fixNonSubmitButtons() {
+  if (!formEl.value) return;
+
+  const buttons = formEl.value.querySelectorAll('button');
+
+  buttons.forEach((btn) => {
+    // Solo el botón "Guardar consulta" debe tener type="submit"
+    const isSubmitButton = btn.textContent?.includes('Guardar consulta');
+    
+    if (isSubmitButton) {
+      btn.setAttribute('type', 'submit');
+    } else {
+      btn.setAttribute('type', 'button');
+    }
+  });
+  
+  // Interceptar cualquier intento de submit del formulario
+  if (formEl.value && !formEl.value.dataset.listenerAdded) {
+    formEl.value.addEventListener('submit', (e) => {
+      // Solo permitir submit si viene del botón correcto
+      const submitter = e.submitter;
+      if (!submitter || !submitter.textContent?.includes('Guardar consulta')) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    }, true);
+    
+    formEl.value.dataset.listenerAdded = 'true';
+  }
+}
+
+// Función para prevenir scroll automático de GOV.CO
+function preventScrollOnInteractions() {
+  // Prevenir scroll cuando se abre un dropdown/desplegable
+  const handleDropdownOpen = (e) => {
+    const element = e.target.closest('.desplegable-govco, [data-type="calendar"]');
+    if (element) {
+      // Guardar posición actual
+      const scrollPos = window.scrollY || document.documentElement.scrollTop;
+      
+      // Esperar a que GOV.CO abra el dropdown
+      setTimeout(() => {
+        // Restaurar posición
+        window.scrollTo(0, scrollPos);
+      }, 50);
+    }
+  };
+
+  // Prevenir scroll al hacer focus en inputs de calendarios
+  const handleCalendarFocus = (e) => {
+    if (e.target.closest('[data-type="calendar"] input')) {
+      const scrollPos = window.scrollY || document.documentElement.scrollTop;
+      e.preventDefault();
+      setTimeout(() => {
+        window.scrollTo(0, scrollPos);
+      }, 10);
+    }
+  };
+
+  // Agregar listeners a toda la sección del formulario
+  if (formEl.value) {
+    formEl.value.removeEventListener('click', handleDropdownOpen);
+    formEl.value.addEventListener('click', handleDropdownOpen);
+    
+    formEl.value.removeEventListener('focus', handleCalendarFocus, true);
+    formEl.value.addEventListener('focus', handleCalendarFocus, true);
+  }
+}
+
+// Función para inicializar componentes GOV.CO
+function initializeGovcoComponents() {
+  if (typeof window === 'undefined' || !window.GOVCo) return;
+  
+  nextTick(() => {
+    // Inicializar dropdowns básicos
+    const dropdowns = document.querySelectorAll('.desplegable-govco[data-type="basic"]');
+    dropdowns.forEach(dropdown => {
+      if (window.GOVCo?.init) {
+        window.GOVCo.init(dropdown.parentElement);
+      }
+    });
+
+    // Inicializar calendarios
+    const calendars = document.querySelectorAll('[data-type="calendar"]');
+    calendars.forEach(cal => {
+      if (window.GOVCo?.init) {
+        window.GOVCo.init(cal.parentElement);
+      }
+    });
+    
+    // Sincronizar valores después de inicializar
+    setTimeout(() => {
+      syncDropdownValues();
+      syncDateValues();
+    }, 200);
+  });
+}
+
+// Función para configurar listeners en los dropdowns
+function setupDropdownListeners() {
+  // Escuchar cambios en los selects nativos
+  const selects = ['animal', 'consultType', 'prognosis', 'veterinarian'];
+  
+  selects.forEach(id => {
+    const select = document.getElementById(id);
+    if (select) {
+      select.addEventListener('change', (e) => {
+        const field = id === 'animal' ? 'animalId' : 
+                     id === 'consultType' ? 'consultType' :
+                     id === 'veterinarian' ? 'veterinarianId' : id;
+        form[field] = e.target.value;
+        console.log(`${field} changed to:`, e.target.value);
+      });
+    }
+  });
+  
+  // Escuchar cambios en los inputs de fecha
+  ['consultDate', 'followupDate'].forEach(id => {
+    const dateInput = document.getElementById(id);
+    if (dateInput) {
+      ['change', 'blur', 'input'].forEach(eventType => {
+        dateInput.addEventListener(eventType, (e) => {
+          syncDateValues();
+        });
+      });
+    }
+  });
+}
+
+// Función para sincronizar valores de dropdowns
+function syncDropdownValues() {
+  const animal = document.getElementById('animal');
+  const consultType = document.getElementById('consultType');
+  const prognosis = document.getElementById('prognosis');
+  const veterinarian = document.getElementById('veterinarian');
+  
+  if (animal) form.animalId = animal.value;
+  if (consultType) form.consultType = consultType.value;
+  if (prognosis) form.prognosis = prognosis.value;
+  if (veterinarian) form.veterinarianId = veterinarian.value;
+  
+  console.log('Dropdowns sincronizados:', {
+    animalId: form.animalId,
+    consultType: form.consultType,
+    prognosis: form.prognosis,
+    veterinarianId: form.veterinarianId
+  });
+}
+
+// Función para sincronizar valores de fechas
+function syncDateValues() {
+  const consultDate = document.getElementById('consultDate');
+  const followupDate = document.getElementById('followupDate');
+  
+  if (consultDate) {
+    form.consultDate = consultDate.value;
+    console.log('consultDate sincronizada:', form.consultDate);
+  }
+  
+  if (followupDate) {
+    form.followupDate = followupDate.value;
+    console.log('followupDate sincronizada:', form.followupDate);
+  }
+}
+
 function validate() {
+  // Sincronizar valores antes de validar
+  syncDropdownValues();
+  syncDateValues();
+  
   Object.keys(errors).forEach(k => {
     if (typeof errors[k] === 'object') {
       Object.keys(errors[k]).forEach(subKey => errors[k][subKey] = '');
@@ -468,11 +638,17 @@ async function onSubmit() {
 }
 
 onMounted(() => {
-  // Inicializar componentes GOV.CO
-  if (window.GOVCo?.init) {
-    const dropdowns = document.querySelectorAll('.desplegable-govco');
-    dropdowns.forEach(dropdown => {
-      window.GOVCo.init(dropdown.parentElement);
+  fixNonSubmitButtons();
+  preventScrollOnInteractions();
+  initializeGovcoComponents();
+  setupDropdownListeners();
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('load', () => {
+      fixNonSubmitButtons();
+      preventScrollOnInteractions();
+      initializeGovcoComponents();
+      setupDropdownListeners();
     });
   }
 });
@@ -506,7 +682,6 @@ onMounted(() => {
   margin: 18px 0;
 }
 
-/* Igual que en SearchFilters.vue */
 .input-like-govco label {
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -530,6 +705,14 @@ onMounted(() => {
 
 .neut-date-container .desplegable-govco {
   margin-top: 0.7rem;
+}
+
+:deep(.desplegable-govco .desplegable-items) {
+  z-index: 1500 !important;
+}
+
+:deep(.desplegable-govco.desplegable-calendar-govco .desplegable-calendar-control) {
+  z-index: 1500 !important;
 }
 
 @media (max-width: 768px) {

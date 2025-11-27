@@ -1,10 +1,8 @@
 <!-- src/App.vue -->
 <template>
-  <div class="app-layout">
-    /*<Navbar />*/
+  
     
-    <div class="app-content">
-      <Sidebar />
+    
       
       <main class="app-main">
         <!-- Aquí irían tus vistas/rutas -->
@@ -12,8 +10,8 @@
         <AnimalsView />
         <VeterinaryView />
       </main>
-    </div>
-  </div>
+    
+  
 </template>
 
 <script setup>
