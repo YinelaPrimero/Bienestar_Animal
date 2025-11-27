@@ -5,75 +5,56 @@
     <div class="form-header">
       <h2 class="h2-tipografia-govco">Reportar Denuncia de Maltrato Animal</h2>
       <p class="text2-tipografia-govco">
-        Complete el formulario para reportar un caso de maltrato, abandono o situación de riesgo animal.
-        <strong>No requiere autenticación.</strong>
+        Complete el formulario para reportar un caso de maltrato, abandono o situacion de riesgo animal.
+        <strong>No requiere autenticacion.</strong>
       </p>
     </div>
 
     <form ref="formEl" @submit.prevent="onSubmit" novalidate>
 
-      <!-- SECCIÓN 1: INFORMACIÓN DEL CASO -->
+      <!-- SECCION 1: INFORMACION DEL CASO -->
       <div class="form-section">
-        <h3 class="h5-tipografia-govco section-title">Información del caso</h3>
+        <h3 class="h5-tipografia-govco section-title">Informacion del caso</h3>
 
         <div class="form-grid">
           <!-- Tipo de denuncia -->
-          <div class="input-like-govco">
-            <label for="complaintType" class="label-desplegable-govco">
-              Tipo de denuncia<span aria-required="true">*</span>
-            </label>
-            <div class="desplegable-govco" data-type="basic" id="complaintType-dropdown">
-              <select id="complaintType" v-model="form.complaintType" aria-invalid="false">
-                <option disabled value="">Seleccionar tipo</option>
-                <option value="maltrato_fisico">Maltrato físico</option>
-                <option value="abandono">Abandono</option>
-                <option value="negligencia">Negligencia (falta de alimento/agua/refugio)</option>
-                <option value="hacinamiento">Hacinamiento</option>
-                <option value="pelea_animales">Pelea de animales</option>
-                <option value="animal_herido">Animal herido en vía pública</option>
-                <option value="envenenamiento">Posible envenenamiento</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
-            <span v-if="errors.complaintType" class="alert-desplegable-govco">{{ errors.complaintType }}</span>
-          </div>
+          <DesplegableGovco
+            id="complaintType"
+            v-model="form.complaintType"
+            label="Tipo de denuncia"
+            :required="true"
+            :options="complaintTypeOptions"
+            placeholder="Seleccionar tipo"
+            :alert-text="errors.complaintType"
+            :error="!!errors.complaintType"
+            width="100%"
+          />
 
           <!-- Urgencia sugerida -->
-          <div class="input-like-govco">
-            <label for="urgency" class="label-desplegable-govco">
-              Nivel de urgencia<span aria-required="true">*</span>
-            </label>
-            <div class="desplegable-govco" data-type="basic" id="urgency-dropdown">
-              <select id="urgency" v-model="form.urgency" aria-invalid="false">
-                <option disabled value="">Seleccionar urgencia</option>
-                <option value="critico">Crítico - Riesgo de vida inminente</option>
-                <option value="alto">Alto - Maltrato activo</option>
-                <option value="medio">Medio - Abandono/negligencia</option>
-                <option value="bajo">Bajo - Situación no urgente</option>
-              </select>
-            </div>
-            <span v-if="errors.urgency" class="alert-desplegable-govco">{{ errors.urgency }}</span>
-          </div>
+          <DesplegableGovco
+            id="urgency"
+            v-model="form.urgency"
+            label="Nivel de urgencia"
+            :required="true"
+            :options="urgencyOptions"
+            placeholder="Seleccionar urgencia"
+            :alert-text="errors.urgency"
+            :error="!!errors.urgency"
+            width="100%"
+          />
 
           <!-- Especie del animal -->
-          <div class="input-like-govco">
-            <label for="animalSpecies" class="label-desplegable-govco">
-              Especie del animal<span aria-required="true">*</span>
-            </label>
-            <div class="desplegable-govco" data-type="basic" id="animalSpecies-dropdown">
-              <select id="animalSpecies" v-model="form.animalSpecies" aria-invalid="false">
-                <option disabled value="">Seleccionar especie</option>
-                <option value="perro">Perro</option>
-                <option value="gato">Gato</option>
-                <option value="equino">Equino (caballo, burro)</option>
-                <option value="bovino">Bovino</option>
-                <option value="ave">Ave</option>
-                <option value="otro">Otro</option>
-                <option value="desconocido">No sé / Varios</option>
-              </select>
-            </div>
-            <span v-if="errors.animalSpecies" class="alert-desplegable-govco">{{ errors.animalSpecies }}</span>
-          </div>
+          <DesplegableGovco
+            id="animalSpecies"
+            v-model="form.animalSpecies"
+            label="Especie del animal"
+            :required="true"
+            :options="speciesOptions"
+            placeholder="Seleccionar especie"
+            :alert-text="errors.animalSpecies"
+            :error="!!errors.animalSpecies"
+            width="100%"
+          />
 
           <!-- Cantidad aproximada -->
           <div class="entradas-de-texto-govco">
@@ -88,29 +69,29 @@
             <span class="info-entradas-de-texto-govco">Si no sabe, deje 1</span>
           </div>
 
-          <!-- Descripción del caso -->
+          <!-- Descripcion del caso -->
           <div class="entradas-de-texto-govco full-width">
-            <label for="description">Descripción detallada del caso<span aria-required="true">*</span></label>
+            <label for="description">Descripcion detallada del caso<span aria-required="true">*</span></label>
             <textarea
               id="description"
               v-model="form.description"
               rows="5"
-              placeholder="Describa la situación observada: qué tipo de maltrato o situación, desde cuándo ocurre (si lo sabe), condiciones del animal, comportamiento del presunto responsable, etc."
+              placeholder="Describa la situacion observada: que tipo de maltrato o situacion, desde cuando ocurre (si lo sabe), condiciones del animal, comportamiento del presunto responsable, etc."
             ></textarea>
-            <span class="info-entradas-de-texto-govco">Mínimo 50 caracteres. Sea lo más detallado posible.</span>
+            <span class="info-entradas-de-texto-govco">Minimo 50 caracteres. Sea lo mas detallado posible.</span>
             <span v-if="errors.description" class="error-text">{{ errors.description }}</span>
           </div>
         </div>
       </div>
 
-      <!-- SECCIÓN 2: UBICACIÓN -->
+      <!-- SECCION 2: UBICACION -->
       <div class="form-section">
-        <h3 class="h5-tipografia-govco section-title">Ubicación del caso</h3>
+        <h3 class="h5-tipografia-govco section-title">Ubicacion del caso</h3>
 
         <div class="form-grid">
-          <!-- Dirección -->
+          <!-- Direccion -->
           <div class="entradas-de-texto-govco full-width">
-            <label for="address">Dirección o referencia<span aria-required="true">*</span></label>
+            <label for="address">Direccion o referencia<span aria-required="true">*</span></label>
             <input
               type="text"
               id="address"
@@ -124,7 +105,7 @@
           <!-- Mapa interactivo -->
           <div class="full-width">
             <label class="label-desplegable-govco">
-              Ubicación en el mapa<span aria-required="true">*</span>
+              Ubicacion en el mapa<span aria-required="true">*</span>
             </label>
             <div class="map-container">
               <MapSelector
@@ -138,7 +119,7 @@
                   Lng: {{ form.coordinates.lng.toFixed(6) }}
                 </span>
                 <span v-else>
-                  Haga clic en el mapa o use "Mi ubicación" para marcar el lugar del incidente
+                  Haga clic en el mapa o use "Mi ubicacion" para marcar el lugar del incidente
                 </span>
               </p>
             </div>
@@ -147,60 +128,34 @@
         </div>
       </div>
 
-      <!-- SECCIÓN 3: EVIDENCIAS -->
+      <!-- SECCION 3: EVIDENCIAS -->
       <div class="form-section">
-        <h3 class="h5-tipografia-govco section-title">Evidencias (fotografías y videos)</h3>
+        <h3 class="h5-tipografia-govco section-title">Evidencias (fotografias y videos)</h3>
 
         <div class="form-grid">
           <div class="full-width">
             <div class="evidence-info">
               <p class="text2-tipografia-govco">
-                Adjunte fotografías o videos que documenten la situación. Las evidencias ayudan a priorizar y atender mejor su denuncia.
+                Adjunte fotografias o videos que documenten la situacion. Las evidencias ayudan a priorizar y atender mejor su denuncia.
               </p>
             </div>
 
-            <!-- Carga de archivos GOV.CO -->
-            <div class="container-carga-de-archivo-govco">
-              <div class="loader-carga-de-archivo-govco">
-                <div class="all-input-carga-de-archivo-govco">
-                  <input
-                    id="evidence"
-                    type="file"
-                    class="input-carga-de-archivo-govco"
-                    multiple
-                    accept="image/*,video/*"
-                    @change="onFilesSelected"
-                  />
-                  <label for="evidence" class="label-carga-de-archivo-govco">
-                    Fotografías y videos del caso (opcional)
-                  </label>
-                  <label for="evidence" class="container-input-carga-de-archivo-govco">
-                    <span class="button-file-carga-de-archivo-govco">Seleccionar archivos</span>
-                    <span class="file-name-carga-de-archivo-govco">{{ evidenceLabel }}</span>
-                  </label>
-                  <span class="text-validation-carga-de-archivo-govco">
-                    Formatos: JPG, PNG, MP4, MOV. Máximo 10 archivos, 10MB cada uno.
-                  </span>
-                </div>
-              </div>
+            <!-- Usar componente FileUploader -->
+            <FileUploader
+              v-model="form.evidence"
+              label="Fotografias y videos del caso (opcional)"
+              accept="image/*,video/*"
+              :max-files="10"
+              :max-size-m-b="10"
+              help-text="Formatos: JPG, PNG, MP4, MOV. Maximo 10 archivos, 10MB cada uno."
+            />
 
-              <!-- Lista de archivos seleccionados -->
-              <div v-if="form.evidence.length > 0" class="evidence-preview">
-                <div v-for="(file, index) in form.evidence" :key="index" class="evidence-item">
-                  <span class="evidence-icon">{{ getFileIcon(file) }}</span>
-                  <span class="evidence-name">{{ file.name }}</span>
-                  <span class="evidence-size">({{ formatSize(file.size) }})</span>
-                  <button type="button" class="evidence-remove" @click="removeFile(index)">Quitar</button>
-                </div>
-              </div>
-
-              <span v-if="errors.evidence" class="alert-desplegable-govco">{{ errors.evidence }}</span>
-            </div>
+            <span v-if="errors.evidence" class="alert-desplegable-govco">{{ errors.evidence }}</span>
           </div>
         </div>
       </div>
 
-      <!-- SECCIÓN 4: DATOS DEL DENUNCIANTE (OPCIONAL) -->
+      <!-- SECCION 4: DATOS DEL DENUNCIANTE (OPCIONAL) -->
       <div class="form-section">
         <h3 class="h5-tipografia-govco section-title">Datos del denunciante (opcional)</h3>
 
@@ -212,7 +167,7 @@
               v-model="form.isAnonymous"
             />
             <label for="anonymous">
-              Deseo realizar esta denuncia de forma <strong>anónima</strong>
+              Deseo realizar esta denuncia de forma <strong>anonima</strong>
             </label>
           </div>
 
@@ -228,9 +183,9 @@
               />
             </div>
 
-            <!-- Cédula -->
+            <!-- Cedula -->
             <div class="entradas-de-texto-govco">
-              <label for="reporterId">Número de cédula</label>
+              <label for="reporterId">Numero de cedula</label>
               <input
                 type="text"
                 id="reporterId"
@@ -239,9 +194,9 @@
               />
             </div>
 
-            <!-- Teléfono -->
+            <!-- Telefono -->
             <div class="entradas-de-texto-govco">
-              <label for="reporterPhone">Teléfono de contacto</label>
+              <label for="reporterPhone">Telefono de contacto</label>
               <input
                 type="tel"
                 id="reporterPhone"
@@ -252,7 +207,7 @@
 
             <!-- Email -->
             <div class="entradas-de-texto-govco">
-              <label for="reporterEmail">Correo electrónico</label>
+              <label for="reporterEmail">Correo electronico</label>
               <input
                 type="email"
                 id="reporterEmail"
@@ -265,19 +220,19 @@
 
           <div v-else class="anonymous-notice full-width">
             <div class="notice-box">
-              <span class="notice-icon">=</span>
-              <p>Su denuncia será procesada de forma anónima. No podremos contactarlo para información adicional, pero puede consultar el estado con el número de caso que recibirá.</p>
+              <span class="notice-icon">ðŸ”’</span>
+              <p>Su denuncia sera procesada de forma anonima. No podremos contactarlo para informacion adicional, pero puede consultar el estado con el numero de caso que recibira.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SECCIÓN 5: INFORMACIÓN ADICIONAL -->
+      <!-- SECCION 5: INFORMACION ADICIONAL -->
       <div class="form-section">
-        <h3 class="h5-tipografia-govco section-title">Información adicional</h3>
+        <h3 class="h5-tipografia-govco section-title">Informacion adicional</h3>
 
         <div class="form-grid">
-          <!-- ¿Conoce al responsable? -->
+          <!-- Conoce al responsable? -->
           <div class="checkbox-govco">
             <input
               type="checkbox"
@@ -285,20 +240,20 @@
               v-model="form.knowsResponsible"
             />
             <label for="knowsResponsible">
-              Tengo información sobre el presunto responsable
+              Tengo informacion sobre el presunto responsable
             </label>
           </div>
 
           <!-- Datos del responsable -->
           <div v-if="form.knowsResponsible" class="entradas-de-texto-govco full-width">
-            <label for="responsibleInfo">Información del presunto responsable</label>
+            <label for="responsibleInfo">Informacion del presunto responsable</label>
             <textarea
               id="responsibleInfo"
               v-model="form.responsibleInfo"
               rows="3"
-              placeholder="Nombre, descripción física, dirección, placa de vehículo, o cualquier dato que ayude a identificarlo..."
+              placeholder="Nombre, descripcion fisica, direccion, placa de vehiculo, o cualquier dato que ayude a identificarlo..."
             ></textarea>
-            <span class="info-entradas-de-texto-govco">Esta información es confidencial y solo será usada para la investigación</span>
+            <span class="info-entradas-de-texto-govco">Esta informacion es confidencial y solo sera usada para la investigacion</span>
           </div>
 
           <!-- Observaciones adicionales -->
@@ -308,13 +263,13 @@
               id="additionalNotes"
               v-model="form.additionalNotes"
               rows="3"
-              placeholder="Cualquier información adicional que considere relevante..."
+              placeholder="Cualquier informacion adicional que considere relevante..."
             ></textarea>
           </div>
         </div>
       </div>
 
-      <!-- TÉRMINOS Y CONDICIONES -->
+      <!-- TERMINOS Y CONDICIONES -->
       <div class="form-section terms-section">
         <div class="checkbox-govco">
           <input
@@ -323,8 +278,8 @@
             v-model="form.acceptTerms"
           />
           <label for="acceptTerms">
-            Declaro que la información proporcionada es verdadera y acepto los
-            <a href="#" @click.prevent="showTerms">términos y condiciones</a> del servicio.
+            Declaro que la informacion proporcionada es verdadera y acepto los
+            <a href="#" @click.prevent="showTerms">terminos y condiciones</a> del servicio.
           </label>
         </div>
         <span v-if="errors.acceptTerms" class="error-text">{{ errors.acceptTerms }}</span>
@@ -344,25 +299,54 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted, nextTick } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import MapSelector from '../common/MapSelector.vue';
-
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+import DesplegableGovco from '../common/DesplegableGovco.vue';
+import FileUploader from '../common/FileUploader.vue';
 
 const emit = defineEmits(['submitted']);
 
 const formEl = ref(null);
 const isSubmitting = ref(false);
 
+// Opciones para los dropdowns
+const complaintTypeOptions = [
+  { value: 'maltrato_fisico', text: 'Maltrato fisico' },
+  { value: 'abandono', text: 'Abandono' },
+  { value: 'negligencia', text: 'Negligencia (falta de alimento/agua/refugio)' },
+  { value: 'hacinamiento', text: 'Hacinamiento' },
+  { value: 'pelea_animales', text: 'Pelea de animales' },
+  { value: 'animal_herido', text: 'Animal herido en via publica' },
+  { value: 'envenenamiento', text: 'Posible envenenamiento' },
+  { value: 'otro', text: 'Otro' }
+];
+
+const urgencyOptions = [
+  { value: 'critico', text: 'Critico - Riesgo de vida inminente' },
+  { value: 'alto', text: 'Alto - Maltrato activo' },
+  { value: 'medio', text: 'Medio - Abandono/negligencia' },
+  { value: 'bajo', text: 'Bajo - Situacion no urgente' }
+];
+
+const speciesOptions = [
+  { value: 'perro', text: 'Perro' },
+  { value: 'gato', text: 'Gato' },
+  { value: 'equino', text: 'Equino (caballo, burro)' },
+  { value: 'bovino', text: 'Bovino' },
+  { value: 'ave', text: 'Ave' },
+  { value: 'otro', text: 'Otro' },
+  { value: 'desconocido', text: 'No se / Varios' }
+];
+
 const form = reactive({
-  // Información del caso
+  // Informacion del caso
   complaintType: '',
   urgency: '',
   animalSpecies: '',
   animalCount: 1,
   description: '',
 
-  // Ubicación
+  // Ubicacion
   address: '',
   coordinates: null,
 
@@ -376,12 +360,12 @@ const form = reactive({
   reporterPhone: '',
   reporterEmail: '',
 
-  // Información adicional
+  // Informacion adicional
   knowsResponsible: false,
   responsibleInfo: '',
   additionalNotes: '',
 
-  // Términos
+  // Terminos
   acceptTerms: false
 });
 
@@ -396,116 +380,8 @@ const errors = reactive({
   acceptTerms: ''
 });
 
-// Computed
-const evidenceLabel = computed(() => {
-  if (form.evidence.length === 0) return 'Sin archivos seleccionados';
-  return `${form.evidence.length} archivo${form.evidence.length > 1 ? 's' : ''} seleccionado${form.evidence.length > 1 ? 's' : ''}`;
-});
-
-// Funciones de archivos
-function onFilesSelected(event) {
-  const files = Array.from(event.target.files || []);
-  errors.evidence = '';
-
-  const maxSize = 10 * 1024 * 1024; // 10MB
-  const maxFiles = 10;
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'video/mp4', 'video/quicktime', 'video/x-msvideo'];
-
-  // Validar cantidad
-  if (form.evidence.length + files.length > maxFiles) {
-    errors.evidence = `Máximo ${maxFiles} archivos permitidos.`;
-    return;
-  }
-
-  // Validar cada archivo
-  for (const file of files) {
-    if (!allowedTypes.includes(file.type)) {
-      errors.evidence = `Formato no permitido: ${file.name}. Use JPG, PNG, MP4 o MOV.`;
-      return;
-    }
-    if (file.size > maxSize) {
-      errors.evidence = `El archivo ${file.name} supera el límite de 10MB.`;
-      return;
-    }
-  }
-
-  form.evidence.push(...files);
-}
-
-function removeFile(index) {
-  form.evidence.splice(index, 1);
-}
-
-function getFileIcon(file) {
-  if (file.type.startsWith('image/')) return '=÷';
-  if (file.type.startsWith('video/')) return '<¥';
-  return '=Î';
-}
-
-function formatSize(bytes) {
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-// Inicialización GOV.CO
-function initializeGovcoComponents() {
-  if (typeof window === 'undefined' || !window.GOVCo) return;
-
-  nextTick(() => {
-    const dropdowns = document.querySelectorAll('.desplegable-govco[data-type="basic"]');
-    dropdowns.forEach(dropdown => {
-      if (window.GOVCo?.init) {
-        window.GOVCo.init(dropdown.parentElement);
-      }
-    });
-
-    setTimeout(() => syncDropdownValues(), 200);
-  });
-}
-
-function setupDropdownListeners() {
-  const selects = ['complaintType', 'urgency', 'animalSpecies'];
-
-  selects.forEach(id => {
-    const select = document.getElementById(id);
-    if (select) {
-      select.addEventListener('change', (e) => {
-        form[id] = e.target.value;
-      });
-    }
-  });
-}
-
-function syncDropdownValues() {
-  const complaintType = document.getElementById('complaintType');
-  const urgency = document.getElementById('urgency');
-  const animalSpecies = document.getElementById('animalSpecies');
-
-  if (complaintType) form.complaintType = complaintType.value;
-  if (urgency) form.urgency = urgency.value;
-  if (animalSpecies) form.animalSpecies = animalSpecies.value;
-}
-
-function preventScrollOnInteractions() {
-  const handleDropdownOpen = (e) => {
-    const element = e.target.closest('.desplegable-govco');
-    if (element) {
-      const scrollPos = window.scrollY || document.documentElement.scrollTop;
-      setTimeout(() => {
-        window.scrollTo(0, scrollPos);
-      }, 50);
-    }
-  };
-
-  if (formEl.value) {
-    formEl.value.removeEventListener('click', handleDropdownOpen);
-    formEl.value.addEventListener('click', handleDropdownOpen);
-  }
-}
-
-// Validación
+// Validacion
 function validate() {
-  syncDropdownValues();
   Object.keys(errors).forEach(k => errors[k] = '');
 
   let isValid = true;
@@ -526,29 +402,29 @@ function validate() {
   }
 
   if (!form.description || form.description.trim().length < 50) {
-    errors.description = 'La descripción debe tener al menos 50 caracteres';
+    errors.description = 'La descripcion debe tener al menos 50 caracteres';
     isValid = false;
   }
 
   if (!form.address || form.address.trim().length < 10) {
-    errors.address = 'Ingrese una dirección o referencia válida';
+    errors.address = 'Ingrese una direccion o referencia valida';
     isValid = false;
   }
 
   if (!form.coordinates) {
-    errors.coordinates = 'Marque la ubicación en el mapa';
+    errors.coordinates = 'Marque la ubicacion en el mapa';
     isValid = false;
   }
 
   if (!form.acceptTerms) {
-    errors.acceptTerms = 'Debe aceptar los términos y condiciones';
+    errors.acceptTerms = 'Debe aceptar los terminos y condiciones';
     isValid = false;
   }
 
   return isValid;
 }
 
-// Generar número de caso
+// Generar numero de caso
 function generateCaseNumber() {
   const date = new Date();
   const year = date.getFullYear();
@@ -557,9 +433,8 @@ function generateCaseNumber() {
   return `DEN-${year}${month}-${random}`;
 }
 
-// Clasificar urgencia automáticamente
+// Clasificar urgencia automaticamente
 function classifyUrgency() {
-  // La urgencia puede ser reclasificada por el sistema según el tipo
   const criticalTypes = ['maltrato_fisico', 'pelea_animales', 'envenenamiento'];
   const highTypes = ['animal_herido'];
 
@@ -572,7 +447,7 @@ function classifyUrgency() {
   return form.urgency;
 }
 
-// Preparar datos para envío
+// Preparar datos para envio
 function prepareComplaintData() {
   return {
     caso_numero: generateCaseNumber(),
@@ -616,7 +491,7 @@ function resetForm() {
 }
 
 function showTerms() {
-  alert('Términos y Condiciones:\n\n1. La información proporcionada será utilizada únicamente para atender la denuncia.\n2. Las denuncias falsas pueden tener consecuencias legales.\n3. Los datos personales serán protegidos según la Ley 1581 de 2012.\n4. El tiempo de respuesta depende de la urgencia y disponibilidad de recursos.');
+  alert('Terminos y Condiciones:\n\n1. La informacion proporcionada sera utilizada unicamente para atender la denuncia.\n2. Las denuncias falsas pueden tener consecuencias legales.\n3. Los datos personales seran protegidos segun la Ley 1581 de 2012.\n4. El tiempo de respuesta depende de la urgencia y disponibilidad de recursos.');
 }
 
 // Submit
@@ -633,13 +508,6 @@ async function onSubmit() {
 
     console.log('Enviando denuncia:', complaintData);
 
-    // TODO: Integrar con API real
-    // const response = await fetch(`${API_BASE_URL}/complaints`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(complaintData)
-    // });
-
     // Simular respuesta exitosa
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -655,19 +523,6 @@ async function onSubmit() {
     isSubmitting.value = false;
   }
 }
-
-onMounted(() => {
-  initializeGovcoComponents();
-  setupDropdownListeners();
-  preventScrollOnInteractions();
-
-  if (typeof window !== 'undefined') {
-    window.addEventListener('load', () => {
-      initializeGovcoComponents();
-      setupDropdownListeners();
-    });
-  }
-});
 </script>
 
 <style scoped>
@@ -710,16 +565,68 @@ onMounted(() => {
   column-gap: 2rem;
   row-gap: 1.5rem;
   padding: 1.5rem;
+  overflow: visible;
 }
 
 .full-width {
   grid-column: 1 / 3;
 }
 
+/* Estilos para DesplegableGovco */
+.form-grid > *:nth-child(1) :deep(.desplegable-govco) { z-index: 50; }
+.form-grid > *:nth-child(2) :deep(.desplegable-govco) { z-index: 49; }
+.form-grid > *:nth-child(3) :deep(.desplegable-govco) { z-index: 48; }
+.form-grid > *:nth-child(4) :deep(.desplegable-govco) { z-index: 47; }
+
+:deep(.desplegable-govco) {
+  position: relative;
+}
+
+:deep(.desplegable-govco select) {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #D0D0D0;
+  border-radius: 4px;
+  font-size: 1rem;
+  height: 44px;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+:deep(.desplegable-govco select:focus) {
+  outline: none;
+  border-color: #3366CC;
+  box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2);
+}
+
+:deep(.label-desplegable-govco) {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
 /* Inputs */
+.entradas-de-texto-govco {
+  display: flex;
+  flex-direction: column;
+}
+
+.entradas-de-texto-govco label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
 .entradas-de-texto-govco input,
-.entradas-de-texto-govco textarea,
-.desplegable-govco select {
+.entradas-de-texto-govco textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #D0D0D0;
@@ -729,8 +636,7 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-.entradas-de-texto-govco input,
-.desplegable-govco select {
+.entradas-de-texto-govco input {
   height: 44px;
 }
 
@@ -739,31 +645,11 @@ onMounted(() => {
   min-height: 100px;
 }
 
-.input-like-govco {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  margin: 18px 0;
-}
-
-.input-like-govco label {
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.desplegable-govco {
-  position: relative;
-  width: 100%;
-}
-
-.desplegable-govco select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 12px 8px;
-  padding-right: 2.5rem;
+.entradas-de-texto-govco input:focus,
+.entradas-de-texto-govco textarea:focus {
+  outline: none;
+  border-color: #3366CC;
+  box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2);
 }
 
 /* Textos de ayuda y error */
@@ -790,6 +676,13 @@ onMounted(() => {
   gap: 0.5rem;
 }
 
+.label-desplegable-govco {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
 .map-placeholder {
   color: #666;
   text-align: center;
@@ -813,51 +706,6 @@ onMounted(() => {
   margin: 0;
 }
 
-.evidence-preview {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.evidence-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #f5f7fb;
-  border-radius: 4px;
-}
-
-.evidence-icon {
-  font-size: 1.2rem;
-}
-
-.evidence-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.evidence-size {
-  color: #666;
-  font-size: 0.85rem;
-}
-
-.evidence-remove {
-  background: none;
-  border: none;
-  color: #A80521;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.evidence-remove:hover {
-  text-decoration: underline;
-}
-
 /* Checkbox */
 .checkbox-govco {
   display: flex;
@@ -874,6 +722,7 @@ onMounted(() => {
   cursor: pointer;
   margin-top: 2px;
   flex-shrink: 0;
+  accent-color: #3366CC;
 }
 
 .checkbox-govco label {
@@ -891,7 +740,7 @@ onMounted(() => {
   text-decoration: underline;
 }
 
-/* Denuncia anónima */
+/* Denuncia anonima */
 .anonymous-checkbox {
   background: #E8F0FE;
   border: 2px solid #3366CC;
@@ -920,7 +769,7 @@ onMounted(() => {
   color: #004884;
 }
 
-/* Términos */
+/* Terminos */
 .terms-section {
   padding: 1.5rem;
 }
@@ -968,51 +817,6 @@ onMounted(() => {
 
 .govco-bg-elf-green {
   background-color: #069169;
-}
-
-/* Carga de archivos GOV.CO */
-.container-carga-de-archivo-govco .button-file-carga-de-archivo-govco {
-  background: #3366CC;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.container-carga-de-archivo-govco .file-name-carga-de-archivo-govco {
-  margin-left: 1rem;
-  color: #666;
-}
-
-.container-carga-de-archivo-govco .input-carga-de-archivo-govco {
-  display: none;
-}
-
-.container-carga-de-archivo-govco .container-input-carga-de-archivo-govco {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  border: 2px dashed #D0D0D0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.container-carga-de-archivo-govco .container-input-carga-de-archivo-govco:hover {
-  border-color: #3366CC;
-  background: #f5f7fb;
-}
-
-.container-carga-de-archivo-govco .text-validation-carga-de-archivo-govco {
-  display: block;
-  color: #666;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-}
-
-/* Z-index para dropdowns */
-:deep(.desplegable-govco .desplegable-items) {
-  z-index: 1500 !important;
 }
 
 /* Responsive */

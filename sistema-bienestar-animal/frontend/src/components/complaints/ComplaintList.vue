@@ -3,7 +3,7 @@
 <template>
   <section class="complaint-list">
     <div class="form-header">
-      <h2 class="h2-tipografia-govco">Gestión de Denuncias</h2>
+      <h2 class="h2-tipografia-govco">Gestion de Denuncias</h2>
       <p class="text2-tipografia-govco">
         Revise, clasifique y asigne equipos de rescate a las denuncias pendientes.
       </p>
@@ -11,55 +11,41 @@
 
     <!-- FILTROS -->
     <div class="form-section filters-section">
-      <h3 class="h5-tipografia-govco section-title">Filtros de búsqueda</h3>
+      <h3 class="h5-tipografia-govco section-title">Filtros de busqueda</h3>
       <div class="filters-grid">
         <!-- Estado -->
-        <div class="input-like-govco">
-          <label for="filterStatus" class="label-desplegable-govco">Estado</label>
-          <div class="desplegable-govco" data-type="basic">
-            <select id="filterStatus" v-model="filters.status">
-              <option value="">Todos</option>
-              <option value="recibida">Recibidas</option>
-              <option value="en_revision">En revisión</option>
-              <option value="asignada">Asignadas</option>
-              <option value="en_atencion">En atención</option>
-              <option value="cerrada">Cerradas</option>
-            </select>
-          </div>
-        </div>
+        <DesplegableGovco
+          id="filterStatus"
+          v-model="filters.status"
+          label="Estado"
+          :options="statusOptions"
+          placeholder="Todos"
+          width="100%"
+        />
 
         <!-- Urgencia -->
-        <div class="input-like-govco">
-          <label for="filterUrgency" class="label-desplegable-govco">Urgencia</label>
-          <div class="desplegable-govco" data-type="basic">
-            <select id="filterUrgency" v-model="filters.urgency">
-              <option value="">Todas</option>
-              <option value="critico">Crítico</option>
-              <option value="alto">Alto</option>
-              <option value="medio">Medio</option>
-              <option value="bajo">Bajo</option>
-            </select>
-          </div>
-        </div>
+        <DesplegableGovco
+          id="filterUrgency"
+          v-model="filters.urgency"
+          label="Urgencia"
+          :options="urgencyOptions"
+          placeholder="Todas"
+          width="100%"
+        />
 
         <!-- Tipo -->
-        <div class="input-like-govco">
-          <label for="filterType" class="label-desplegable-govco">Tipo</label>
-          <div class="desplegable-govco" data-type="basic">
-            <select id="filterType" v-model="filters.type">
-              <option value="">Todos</option>
-              <option value="maltrato_fisico">Maltrato físico</option>
-              <option value="abandono">Abandono</option>
-              <option value="negligencia">Negligencia</option>
-              <option value="animal_herido">Animal herido</option>
-              <option value="envenenamiento">Envenenamiento</option>
-            </select>
-          </div>
-        </div>
+        <DesplegableGovco
+          id="filterType"
+          v-model="filters.type"
+          label="Tipo"
+          :options="typeOptions"
+          placeholder="Todos"
+          width="100%"
+        />
 
-        <!-- Búsqueda por número de caso -->
+        <!-- Busqueda por numero de caso -->
         <div class="entradas-de-texto-govco">
-          <label for="filterCase">Número de caso</label>
+          <label for="filterCase">Numero de caso</label>
           <input
             type="text"
             id="filterCase"
@@ -80,11 +66,11 @@
       </div>
     </div>
 
-    <!-- ESTADÍSTICAS RÁPIDAS -->
+    <!-- ESTADISTICAS RAPIDAS -->
     <div class="stats-row">
       <div class="stat-card stat-critical">
         <span class="stat-number">{{ stats.critical }}</span>
-        <span class="stat-label">Críticas</span>
+        <span class="stat-label">Criticas</span>
       </div>
       <div class="stat-card stat-high">
         <span class="stat-number">{{ stats.high }}</span>
@@ -96,7 +82,7 @@
       </div>
       <div class="stat-card stat-inprogress">
         <span class="stat-number">{{ stats.inProgress }}</span>
-        <span class="stat-label">En atención</span>
+        <span class="stat-label">En atencion</span>
       </div>
     </div>
 
@@ -110,7 +96,7 @@
           <label>Ordenar por:</label>
           <select v-model="sortBy" class="sort-select">
             <option value="urgency">Urgencia</option>
-            <option value="date">Fecha (más reciente)</option>
+            <option value="date">Fecha (mas reciente)</option>
             <option value="status">Estado</option>
           </select>
         </div>
@@ -124,7 +110,7 @@
 
       <!-- Empty state -->
       <div v-else-if="filteredComplaints.length === 0" class="empty-state">
-        <span class="empty-icon">=Ë</span>
+        <span class="empty-icon">ğŸ“‹</span>
         <p>No hay denuncias que coincidan con los filtros seleccionados.</p>
       </div>
 
@@ -161,7 +147,7 @@
             </div>
             <p class="complaint-description">{{ truncateText(complaint.descripcion, 120) }}</p>
             <div class="complaint-location">
-              <span class="location-icon">=Í</span>
+              <span class="location-icon">ğŸ“</span>
               <span>{{ complaint.direccion }}</span>
             </div>
           </div>
@@ -212,6 +198,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import RescueMap from './RescueMap.vue';
+import DesplegableGovco from '../common/DesplegableGovco.vue';
 
 const emit = defineEmits(['select', 'assign']);
 
@@ -225,6 +212,30 @@ const filters = reactive({
   caseNumber: ''
 });
 
+// Opciones para los filtros
+const statusOptions = [
+  { value: 'recibida', text: 'Recibidas' },
+  { value: 'en_revision', text: 'En revision' },
+  { value: 'asignada', text: 'Asignadas' },
+  { value: 'en_atencion', text: 'En atencion' },
+  { value: 'cerrada', text: 'Cerradas' }
+];
+
+const urgencyOptions = [
+  { value: 'critico', text: 'Critico' },
+  { value: 'alto', text: 'Alto' },
+  { value: 'medio', text: 'Medio' },
+  { value: 'bajo', text: 'Bajo' }
+];
+
+const typeOptions = [
+  { value: 'maltrato_fisico', text: 'Maltrato fisico' },
+  { value: 'abandono', text: 'Abandono' },
+  { value: 'negligencia', text: 'Negligencia' },
+  { value: 'animal_herido', text: 'Animal herido' },
+  { value: 'envenenamiento', text: 'Envenenamiento' }
+];
+
 // Mock data
 const complaints = ref([
   {
@@ -234,7 +245,7 @@ const complaints = ref([
     urgencia: 'critico',
     especie_animal: 'perro',
     cantidad_animales: 1,
-    descripcion: 'Perro encadenado sin agua ni comida, visiblemente desnutrido y con heridas en el cuello por la cadena. El animal llora constantemente y los vecinos reportan que lleva semanas en esa situación.',
+    descripcion: 'Perro encadenado sin agua ni comida, visiblemente desnutrido y con heridas en el cuello por la cadena. El animal llora constantemente y los vecinos reportan que lleva semanas en esa situacion.',
     direccion: 'Calle 15 #23-45, Barrio El Centro',
     coordenadas: { lat: 3.4516, lng: -76.5319 },
     fecha_recepcion: '2024-11-15T10:30:00',
@@ -248,7 +259,7 @@ const complaints = ref([
     urgencia: 'alto',
     especie_animal: 'gato',
     cantidad_animales: 3,
-    descripcion: 'Familia se mudó y dejó 3 gatos encerrados en el apartamento. Los vecinos escuchan maullidos de hambre desde hace 3 días.',
+    descripcion: 'Familia se mudo y dejo 3 gatos encerrados en el apartamento. Los vecinos escuchan maullidos de hambre desde hace 3 dias.',
     direccion: 'Carrera 8 #42-10, Apto 301, Barrio San Fernando',
     coordenadas: { lat: 3.4450, lng: -76.5250 },
     fecha_recepcion: '2024-11-14T08:15:00',
@@ -262,7 +273,7 @@ const complaints = ref([
     urgencia: 'critico',
     especie_animal: 'perro',
     cantidad_animales: 1,
-    descripcion: 'Perro atropellado en la vía, aún con vida pero no puede moverse. Está en la acera junto a la gasolinera.',
+    descripcion: 'Perro atropellado en la via, aun con vida pero no puede moverse. Esta en la acera junto a la gasolinera.',
     direccion: 'Avenida 6N con Calle 25, junto a Gasolinera Terpel',
     coordenadas: { lat: 3.4600, lng: -76.5400 },
     fecha_recepcion: '2024-11-15T14:20:00',
@@ -276,8 +287,8 @@ const complaints = ref([
     urgencia: 'medio',
     especie_animal: 'perro',
     cantidad_animales: 2,
-    descripcion: 'Dos perros en terraza pequeña, expuestos al sol todo el día sin sombra ni agua suficiente. Se ven muy delgados.',
-    direccion: 'Calle 70 #1-50, Casa esquinera, Barrio Ciudad Jardín',
+    descripcion: 'Dos perros en terraza pequena, expuestos al sol todo el dia sin sombra ni agua suficiente. Se ven muy delgados.',
+    direccion: 'Calle 70 #1-50, Casa esquinera, Barrio Ciudad Jardin',
     coordenadas: { lat: 3.4300, lng: -76.5450 },
     fecha_recepcion: '2024-11-13T16:45:00',
     estado: 'en_atencion',
@@ -290,7 +301,7 @@ const complaints = ref([
     urgencia: 'alto',
     especie_animal: 'gato',
     cantidad_animales: 15,
-    descripcion: 'Casa con acumulación de gatos, mal olor y condiciones insalubres. Los vecinos reportan que hay aproximadamente 15 gatos o más.',
+    descripcion: 'Casa con acumulacion de gatos, mal olor y condiciones insalubres. Los vecinos reportan que hay aproximadamente 15 gatos o mas.',
     direccion: 'Carrera 24 #5-30, Barrio Obrero',
     coordenadas: { lat: 3.4380, lng: -76.5180 },
     fecha_recepcion: '2024-11-12T11:00:00',
@@ -299,7 +310,7 @@ const complaints = ref([
   }
 ]);
 
-// Estadísticas
+// Estadisticas
 const stats = computed(() => ({
   critical: complaints.value.filter(c => c.urgencia === 'critico' && c.estado !== 'cerrada').length,
   high: complaints.value.filter(c => c.urgencia === 'alto' && c.estado !== 'cerrada').length,
@@ -355,22 +366,21 @@ function clearFilters() {
 }
 
 function applyFilters() {
-  // Los filtros se aplican automáticamente via computed
   console.log('Filtros aplicados:', filters);
 }
 
 // Helpers
 function getUrgencyLabel(urgency) {
-  const labels = { critico: 'CRÍTICO', alto: 'ALTO', medio: 'MEDIO', bajo: 'BAJO' };
+  const labels = { critico: 'CRITICO', alto: 'ALTO', medio: 'MEDIO', bajo: 'BAJO' };
   return labels[urgency] || urgency;
 }
 
 function getStatusLabel(status) {
   const labels = {
     recibida: 'Recibida',
-    en_revision: 'En revisión',
+    en_revision: 'En revision',
     asignada: 'Asignada',
-    en_atencion: 'En atención',
+    en_atencion: 'En atencion',
     cerrada: 'Cerrada'
   };
   return labels[status] || status;
@@ -378,7 +388,7 @@ function getStatusLabel(status) {
 
 function getComplaintTypeLabel(type) {
   const labels = {
-    maltrato_fisico: 'Maltrato físico',
+    maltrato_fisico: 'Maltrato fisico',
     abandono: 'Abandono',
     negligencia: 'Negligencia',
     hacinamiento: 'Hacinamiento',
@@ -392,16 +402,16 @@ function getComplaintTypeLabel(type) {
 
 function getTypeIcon(type) {
   const icons = {
-    maltrato_fisico: '>y',
-    abandono: '<Ú',
-    negligencia: ' ',
-    hacinamiento: '<à',
-    pelea_animales: '”',
-    animal_herido: '=‘',
-    envenenamiento: ' ',
-    otro: '=Ë'
+    maltrato_fisico: 'ğŸ©¹',
+    abandono: 'ğŸšï¸',
+    negligencia: 'âš ï¸',
+    hacinamiento: 'ğŸ ',
+    pelea_animales: 'âš”ï¸',
+    animal_herido: 'ğŸš‘',
+    envenenamiento: 'â˜ ï¸',
+    otro: 'ğŸ“‹'
   };
-  return icons[type] || '=Ë';
+  return icons[type] || 'ğŸ“‹';
 }
 
 function getSpeciesLabel(species) {
@@ -432,7 +442,6 @@ function truncateText(text, maxLength) {
 }
 
 onMounted(() => {
-  // Cargar denuncias desde API
   isLoading.value = true;
   setTimeout(() => {
     isLoading.value = false;
@@ -458,7 +467,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   margin-bottom: 1.5rem;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
@@ -473,6 +482,7 @@ onMounted(() => {
 /* Filtros */
 .filters-section {
   padding-bottom: 1.5rem;
+  overflow: visible;
 }
 
 .filters-grid {
@@ -481,21 +491,59 @@ onMounted(() => {
   gap: 1rem;
   padding: 1.5rem;
   align-items: end;
+  overflow: visible;
 }
 
-.input-like-govco {
-  display: flex;
-  flex-direction: column;
+/* Estilos para DesplegableGovco en filtros */
+:deep(.desplegable-govco) {
+  position: relative;
+  z-index: 10;
 }
 
-.input-like-govco label {
+:deep(.desplegable-govco select) {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #D0D0D0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  height: 40px;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+:deep(.desplegable-govco select:focus) {
+  outline: none;
+  border-color: #3366CC;
+  box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2);
+}
+
+:deep(.label-desplegable-govco) {
+  display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: #333;
   font-size: 0.9rem;
 }
 
-.desplegable-govco select,
+.entradas-de-texto-govco {
+  display: flex;
+  flex-direction: column;
+}
+
+.entradas-de-texto-govco label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
 .entradas-de-texto-govco input {
   width: 100%;
   padding: 0.6rem;
@@ -508,6 +556,8 @@ onMounted(() => {
 .filter-actions {
   display: flex;
   gap: 0.5rem;
+  align-items: flex-end;
+  padding-top: 1.5rem;
 }
 
 .govco-btn {
@@ -523,7 +573,7 @@ onMounted(() => {
 .govco-bg-concrete { background: #737373; }
 .govco-bg-marine { background: #3366CC; }
 
-/* Estadísticas */
+/* Estadisticas */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

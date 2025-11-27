@@ -10,7 +10,7 @@
       </p>
     </header>
 
-    <!-- PESTA�AS -->
+    <!-- PESTANAS -->
     <nav class="complaints-tabs">
       <button
         v-for="tab in visibleTabs"
@@ -26,15 +26,15 @@
       </button>
     </nav>
 
-    <!-- CONTENIDO SEG�N PESTA�A -->
+    <!-- CONTENIDO SEGUN PESTANA -->
     <section class="complaints-tab-content">
-      <!-- HU-015: Reportar denuncia (P�blico) -->
+      <!-- HU-015: Reportar denuncia (Publico) -->
       <ComplaintForm
         v-if="activeTab === 'report'"
         @submitted="onComplaintSubmitted"
       />
 
-      <!-- HU-018: Consultar estado (Público) -->
+      <!-- HU-018: Consultar estado (Publico) -->
       <ComplaintStatusCheck
         v-else-if="activeTab === 'status'"
       />
@@ -46,7 +46,7 @@
         @assign="openAssignment"
       />
 
-      <!-- HU-016/HU-017: Gesti�n de operativos -->
+      <!-- HU-016/HU-017: Gestion de operativos -->
       <RescueOperations
         v-else-if="activeTab === 'operations'"
         @register-result="openResultForm"
@@ -88,7 +88,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 
-// Componentes del m�dulo de denuncias
+// Componentes del modulo de denuncias
 import ComplaintForm from '../components/complaints/ComplaintForm.vue';
 import ComplaintStatusCheck from '../components/complaints/ComplaintStatusCheck.vue';
 import ComplaintList from '../components/complaints/ComplaintList.vue';
@@ -177,14 +177,14 @@ const tabs = [
   }
 ];
 
-// Filtrar tabs seg�n rol del usuario
+// Filtrar tabs segun rol del usuario
 const visibleTabs = computed(() => {
   return tabs.filter(tab => tab.roles.includes(userRole.value));
 });
 
 // Handlers
 function onComplaintSubmitted(caseNumber) {
-  alert(`Denuncia registrada exitosamente.\n\nN�mero de caso: ${caseNumber}\n\nGuarde este n�mero para consultar el estado de su denuncia.`);
+  alert(`Denuncia registrada exitosamente.\n\nNumero de caso: ${caseNumber}\n\nGuarde este numero para consultar el estado de su denuncia.`);
   activeTab.value = 'status';
 }
 
